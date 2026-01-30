@@ -1,0 +1,403 @@
+========================================
+Timestamp: Fri Jan 30 12:13:56 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 2
+Load Time: 0s
+Sort Time: 0.003221s
+Total Time: 0.003221s
+Comparisons: 1
+Swaps: 0
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:13:56 2026
+Algorithm: Insertion Sort
+Column: ID
+Records: 2
+Load Time: 0s
+Sort Time: 0s
+Total Time: 0s
+Comparisons: 1
+Swaps: 0
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:13:56 2026
+Algorithm: Merge Sort
+Column: ID
+Records: 2
+Load Time: 0s
+Sort Time: 0.001744s
+Total Time: 0.001744s
+Comparisons: 1
+Swaps: 2
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:14:12 2026
+Algorithm: Bubble Sort
+Column: Last Name
+Records: 3
+Load Time: 0s
+Sort Time: 0s
+Total Time: 0s
+Comparisons: 3
+Swaps: 1
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:14:12 2026
+Algorithm: Insertion Sort
+Column: Last Name
+Records: 3
+Load Time: 0s
+Sort Time: 0s
+Total Time: 0s
+Comparisons: 2
+Swaps: 1
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:14:12 2026
+Algorithm: Merge Sort
+Column: Last Name
+Records: 3
+Load Time: 0s
+Sort Time: 0s
+Total Time: 0s
+Comparisons: 3
+Swaps: 5
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:14:59 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 15000
+Load Time: 0s
+Sort Time: 0.866133s
+Total Time: 0.866133s
+Comparisons: 14999
+Swaps: 0
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:14:59 2026
+Algorithm: Insertion Sort
+Column: ID
+Records: 15000
+Load Time: 0s
+Sort Time: 0.419863s
+Total Time: 0.419863s
+Comparisons: 14999
+Swaps: 0
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:15:00 2026
+Algorithm: Merge Sort
+Column: ID
+Records: 15000
+Load Time: 0s
+Sort Time: 0.536166s
+Total Time: 0.536166s
+Comparisons: 106364
+Swaps: 208616
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:15:54 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 100000
+Load Time: 0s
+Sort Time: 5.72676s
+Total Time: 5.72676s
+Comparisons: 99999
+Swaps: 0
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:40:05 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 10
+Load Time: 0s
+Sort Time: 0s
+Total Time: 0s
+Comparisons: 44
+Swaps: 26
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 12:41:28 2026
+Algorithm: Merge Sort
+Column: ID
+Records: 10000
+Load Time: 0s
+Sort Time: 0.375592s
+Total Time: 0.375592s
+Comparisons: 120361
+Swaps: 133616
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 13:09:59 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 26.2872s
+Total Time: 26.2872s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 13:11:32 2026
+Algorithm: Bubble Sort
+Column: First Name
+Records: 1000
+Load Time: 0s
+Sort Time: 26.2053s
+Total Time: 26.2053s
+Comparisons: 498834
+Swaps: 248261
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 13:11:45 2026
+Algorithm: Insertion Sort
+Column: First Name
+Records: 1000
+Load Time: 0s
+Sort Time: 12.5181s
+Total Time: 12.5181s
+Comparisons: 249254
+Swaps: 248261
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 13:11:45 2026
+Algorithm: Merge Sort
+Column: First Name
+Records: 1000
+Load Time: 0s
+Sort Time: 0.037556s
+Total Time: 0.037556s
+Comparisons: 8690
+Swaps: 9976
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 14:12:28 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 30.5559s
+Total Time: 30.5559s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 14:13:09 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 26.1369s
+Total Time: 26.1369s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 14:13:22 2026
+Algorithm: Insertion Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 12.641s
+Total Time: 12.641s
+Comparisons: 254844
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 14:13:22 2026
+Algorithm: Merge Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 0.047128s
+Total Time: 0.047128s
+Comparisons: 8647
+Swaps: 9976
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 14:14:23 2026
+Algorithm: Merge Sort
+Column: Last Name
+Records: 100000
+Load Time: 0.011118s
+Sort Time: 4.71939s
+Total Time: 4.7305s
+Comparisons: 1536028
+Swaps: 1668928
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 15:43:25 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 27.8002s
+Total Time: 27.8002s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 15:44:19 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 27.2546s
+Total Time: 27.2546s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 15:44:32 2026
+Algorithm: Insertion Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 12.7541s
+Total Time: 12.7541s
+Comparisons: 254844
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 15:44:32 2026
+Algorithm: Merge Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 0.060862s
+Total Time: 0.060862s
+Comparisons: 8647
+Swaps: 9976
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 15:58:17 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 30.0865s
+Total Time: 30.0865s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 15:59:29 2026
+Algorithm: Merge Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 0.060868s
+Total Time: 0.060868s
+Comparisons: 8647
+Swaps: 9976
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 16:00:05 2026
+Algorithm: Bubble Sort
+Column: First Name
+Records: 10
+Load Time: 0s
+Sort Time: 0.005484s
+Total Time: 0.005484s
+Comparisons: 45
+Swaps: 21
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 16:00:05 2026
+Algorithm: Insertion Sort
+Column: First Name
+Records: 10
+Load Time: 0s
+Sort Time: 0.003076s
+Total Time: 0.003076s
+Comparisons: 29
+Swaps: 21
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 16:00:05 2026
+Algorithm: Merge Sort
+Column: First Name
+Records: 10
+Load Time: 0s
+Sort Time: 0.007434s
+Total Time: 0.007434s
+Comparisons: 24
+Swaps: 34
+Completed: Yes
+========================================
+
+========================================
+Timestamp: Fri Jan 30 17:32:44 2026
+Algorithm: Bubble Sort
+Column: ID
+Records: 1000
+Load Time: 0s
+Sort Time: 31.6499s
+Total Time: 31.6499s
+Comparisons: 499224
+Swaps: 253856
+Completed: Yes
+========================================
+
