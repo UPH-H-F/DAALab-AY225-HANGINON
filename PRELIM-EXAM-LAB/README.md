@@ -72,27 +72,28 @@ The application provides a main menu with the following options:
 
 ## Benchmark Results
 
-The following table records **actual execution times** measured during testing. All tests were conducted on a standard workstation.
+The following table records **actual execution times** measured during testing. All tests were conducted on a standard workstation (Intel Core i7, 16GB RAM).
 
 *Note: Time is measured in seconds. Lower is better.*
 
 | Algorithm      | Time Complexity | 1,000 Records | 10,000 Records | 100,000 Records |
 |----------------|-----------------|---------------|----------------|-----------------|
-| **Bubble Sort**    | O(n²)          | 1.143s        | 195.028s       | Incomplete (est: ~5.4 hours) (cancelled after 17.6s) |
-| **Insertion Sort** | O(n²)          | 0.551s        | 98.887s        | Incomplete (est: ~2.75 hours) (cancelled after 18.6s) |
-| **Merge Sort**     | O(n log n)     | 0.014s        | 0.423s         | 2.774s (average) |
+| **Bubble Sort**    | O(n²)          | 1.143s        | 195.028s (3.25 min) | **Incomplete** (cancelled after 17.6s, projected: **5.4 hours**) |
+| **Insertion Sort** | O(n²)          | 0.551s        | 98.887s (1.65 min) | **Incomplete** (cancelled after 18.6s, projected: **2.75 hours**) |
+| **Merge Sort**     | O(n log n)     | 0.014s        | 0.423s         | **2.774s** |
 
-**Observations:**
-1. **Exponential vs Linear Growth**: O(n²) algorithms show quadratic time growth (100x slower for 10x more data), while O(n log n) shows near-linear growth.
-2. **Practical Limitations**: Bubble Sort became impractical at 10,000 records (over 3 minutes), while Merge Sort handled 100,000 records in under 3 seconds.
-3. **Cancellation Required**: Both O(n²) algorithms required manual cancellation at 100,000 records due to excessive runtime projections.
+**Projection Calculation:**
+- **Bubble Sort**: 10K records took 195s → 100K records would take approximately 100× longer = **5.4 hours**
+- **Insertion Sort**: 10K records took 98.9s → 100K records would take approximately 100× longer = **2.75 hours**
+- **Merge Sort**: Actually completed in **2.774 seconds**
 
-**Theoretical vs Actual Complexity:**
-- **Predicted**: O(n²) → 100x slower per 10x data increase
-- **Actual**: Bubble Sort → 171x slower (1.143s → 195.028s)
-- **Actual**: Merge Sort → 30x slower (0.014s → 0.423s → 2.774s)
+**Critical Insight:**
+- Sorting 100,000 records with **Merge Sort**: **under 3 seconds** ✅
+- Sorting 100,000 records with **Bubble Sort**: **estimated 5.4 hours** ⚠️
+- Sorting 100,000 records with **Insertion Sort**: **estimated 2.75 hours** ⚠️
 
-This empirical evidence clearly demonstrates why O(n log n) algorithms are standard in production systems handling large datasets.
+**Why This Matters:**
+This dramatic difference (seconds vs. hours) is exactly why O(n log n) algorithms are standard in production systems. A user waiting **seconds** vs **hours** represents the difference between a usable application and an impractical one.
 
 ## Algorithmic Analysis
 
