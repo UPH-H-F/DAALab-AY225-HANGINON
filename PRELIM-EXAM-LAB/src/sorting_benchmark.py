@@ -833,8 +833,8 @@ class BenchmarkApp:
         # Standard warning for other large datasets
         elif num_records > 10000 and algo in [SortAlgorithm.BUBBLE, SortAlgorithm.INSERTION]:
             print()
-            Console.red(f"  ⚠ WARNING: Sorting {num_records} records with {self.get_algorithm_name(algo)} may take a long time!")
-            Console.yellow("  Estimated time: ", end="")
+            print(f"  ⚠ WARNING: Sorting {num_records} records with {self.get_algorithm_name(algo)} may take a long time!")
+            print("  Estimated time: ", end="")
             if num_records >= 50000:
                 print("several minutes to hours")
             elif num_records >= 20000:
@@ -842,7 +842,7 @@ class BenchmarkApp:
             else:
                 print("10-60 seconds")
             print()
-            Console.cyan("  Do you want to continue? (y/n): ", end="")
+            print("  Do you want to continue? (y/n): ", end="")
             
             confirm = input().strip().lower()
             if confirm not in ['y', 'yes']:
@@ -1013,8 +1013,8 @@ class BenchmarkApp:
         # Standard warning for other large datasets
         elif num_records > 10000:
             print()
-            Console.yellow(f"  ⚠ Note: O(n²) algorithms (Bubble, Insertion) may be slow with {num_records} records.")
-            Console.yellow("  Recommended: Use <= 10,000 records for comparison benchmarks.")
+            print(f"  ⚠ Note: O(n²) algorithms (Bubble, Insertion) may be slow with {num_records} records.")
+            print("  Recommended: Use <= 10,000 records for comparison benchmarks.")
             print("\n  Continue anyway? (y/n): ", end="")
             
             confirm = input().strip().lower()
