@@ -15,26 +15,28 @@
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
         html {
-            transition: background-color 0.3s ease;
+            transition: background-color 0.4s ease;
         }
 
         body {
             margin: 0;
             overflow: hidden;
             font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        /* Light Theme Backgrounds */
+        /* Light Theme Backgrounds (Warm "Paper" Eye-Care Vibe) */
         html:not(.dark) body {
-            background-color: #f8fafc;
-            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #e2e8f0 80%);
+            background-color: #faf9f6; 
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0eee9 80%);
+            color: #27272a;
         }
 
-        /* Dark Theme Backgrounds */
+        /* Dark Theme Backgrounds (Soft Zinc Low-Strain Vibe) */
         html.dark body {
-            background-color: #0b0f19;
-            background-image: radial-gradient(circle at 50% 50%, #172033 0%, #0b0f19 80%);
+            background-color: #18181b;
+            background-image: radial-gradient(circle at 50% 50%, #27272a 0%, #141417 80%);
+            color: #e4e4e7;
         }
 
         /* Interactive Canvas Container */
@@ -47,73 +49,73 @@
             z-index: 0;
         }
         
-        /* Floating Glass Panel Styling (Responsive to Theme) */
+        /* Floating Glass Panel Styling */
         html:not(.dark) .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
         }
 
         html.dark .glass-panel {
-            background: rgba(17, 24, 39, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background: rgba(24, 24, 27, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
         }
 
         /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 5px; }
+        html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #52525b; border-radius: 5px; }
 
         /* Vis.js tooltip styling override */
         html:not(.dark) div.vis-tooltip {
-            background-color: rgba(255, 255, 255, 0.95) !important;
+            background-color: rgba(255, 255, 255, 0.98) !important;
             backdrop-filter: blur(8px);
-            border: 1px solid #818cf8 !important;
-            color: #1e293b !important;
+            border: 1px solid #a1a1aa !important;
+            color: #27272a !important;
             font-family: ui-sans-serif, system-ui, sans-serif !important;
             border-radius: 0.5rem !important;
-            padding: 10px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+            padding: 10px 14px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
         }
 
         html.dark div.vis-tooltip {
-            background-color: rgba(30, 41, 59, 0.9) !important;
+            background-color: rgba(39, 39, 42, 0.98) !important;
             backdrop-filter: blur(8px);
-            border: 1px solid #6366f1 !important;
-            color: #f8fafc !important;
+            border: 1px solid #52525b !important;
+            color: #f4f4f5 !important;
             font-family: ui-sans-serif, system-ui, sans-serif !important;
             border-radius: 0.5rem !important;
-            padding: 10px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+            padding: 10px 14px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
         }
 
-        /* Active Route Table Row Highlights */
+        /* Active Route Table Row Highlights - Softer WCAG contrast */
         html:not(.dark) tr.active-route {
-            background-color: #e0e7ff !important; 
-            color: #3730a3 !important; 
+            background-color: #f0fdf4 !important; 
+            color: #166534 !important; 
         }
         html:not(.dark) tr.active-route td { font-weight: 700; }
         
         html.dark tr.active-route {
-            background-color: rgba(67, 56, 202, 0.4) !important; 
-            color: #818cf8 !important; 
+            background-color: rgba(22, 101, 52, 0.3) !important; 
+            color: #86efac !important; 
         }
         html.dark tr.active-route td { font-weight: 700; }
     </style>
 </head>
-<body class="text-slate-800 dark:text-slate-200">
+<body class="text-zinc-800 dark:text-zinc-200">
 
     <!-- The Interactive Canvas Container -->
     <div id="network-container"></div>
 
     <!-- Theme Toggle Button (Top Right) -->
     <div class="absolute top-6 right-6 z-20">
-        <button onclick="toggleTheme()" class="glass-panel p-3 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all hover:scale-105 active:scale-95" title="Toggle Light/Dark Theme">
+        <button onclick="toggleTheme()" class="glass-panel p-3 rounded-full flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all hover:scale-105 active:scale-95" title="Toggle Light/Dark Theme">
             <!-- Moon Icon (Visible in Light Mode) -->
             <svg id="themeIconDark" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             <!-- Sun Icon (Visible in Dark Mode) -->
@@ -124,21 +126,21 @@
     <!-- Floating Right Data Table Panel -->
     <div class="hidden lg:flex absolute top-24 right-6 w-[380px] max-h-[calc(100vh-160px)] glass-panel rounded-2xl p-5 z-10 flex-col gap-3">
         <div>
-            <h2 class="text-indigo-700 dark:text-indigo-300 font-bold text-lg tracking-wide mb-1">Route Directory</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Live Network Edge Data</p>
+            <h2 class="text-zinc-800 dark:text-zinc-100 font-bold text-lg tracking-wide mb-1">Route Directory</h2>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Live Network Edge Data</p>
         </div>
-        <div class="overflow-y-auto custom-scrollbar flex-1 rounded-lg border border-slate-200 dark:border-slate-700/60 bg-white/50 dark:bg-slate-900/50">
+        <div class="overflow-y-auto custom-scrollbar flex-1 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-white/60 dark:bg-zinc-900/60">
             <table class="w-full text-left border-collapse text-xs">
-                <thead class="bg-slate-100 dark:bg-slate-800/90 sticky top-0 z-10 text-slate-600 dark:text-slate-300 shadow-sm">
+                <thead class="bg-zinc-100 dark:bg-zinc-800/90 sticky top-0 z-10 text-zinc-600 dark:text-zinc-300 shadow-sm">
                     <tr>
-                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700">From</th>
-                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700">To</th>
-                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700 text-center" title="Distance (km)">D</th>
-                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700 text-center" title="Time (mins)">T</th>
-                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700 text-center" title="Fuel (Liters)">F</th>
+                        <th class="p-2.5 font-bold border-b border-zinc-200 dark:border-zinc-700">From</th>
+                        <th class="p-2.5 font-bold border-b border-zinc-200 dark:border-zinc-700">To</th>
+                        <th class="p-2.5 font-bold border-b border-zinc-200 dark:border-zinc-700 text-center" title="Distance (km)">D</th>
+                        <th class="p-2.5 font-bold border-b border-zinc-200 dark:border-zinc-700 text-center" title="Time (mins)">T</th>
+                        <th class="p-2.5 font-bold border-b border-zinc-200 dark:border-zinc-700 text-center" title="Fuel (Liters)">F</th>
                     </tr>
                 </thead>
-                <tbody id="dataTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/50">
+                <tbody id="dataTableBody" class="divide-y divide-zinc-200 dark:divide-zinc-700/50">
                     <!-- Populated by JS -->
                 </tbody>
             </table>
@@ -149,26 +151,26 @@
     <div class="absolute top-6 left-6 w-[340px] glass-panel rounded-2xl p-5 z-10 flex flex-col gap-4">
         
         <div>
-            <h2 class="text-indigo-700 dark:text-indigo-300 font-bold text-lg tracking-wide mb-1">Routing Map Controls</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Cavite Geographic Architecture</p>
+            <h2 class="text-zinc-800 dark:text-zinc-100 font-bold text-lg tracking-wide mb-1">Routing Map Controls</h2>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Cavite Geographic Architecture</p>
         </div>
 
         <!-- Start Node -->
         <div>
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-1.5">Start Node</label>
-            <select id="startNode" class="w-full bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"></select>
+            <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 tracking-wider uppercase mb-1.5">Start Node</label>
+            <select id="startNode" class="w-full bg-white/90 dark:bg-zinc-800/90 border border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-zinc-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"></select>
         </div>
 
         <!-- End Node -->
         <div>
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-1.5">Destination Node</label>
-            <select id="endNode" class="w-full bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"></select>
+            <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 tracking-wider uppercase mb-1.5">Destination Node</label>
+            <select id="endNode" class="w-full bg-white/90 dark:bg-zinc-800/90 border border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-zinc-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"></select>
         </div>
 
         <!-- Optimization Criteria -->
         <div>
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-1.5">Optimize For</label>
-            <select id="criteria" class="w-full bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm">
+            <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 tracking-wider uppercase mb-1.5">Optimize For</label>
+            <select id="criteria" class="w-full bg-white/90 dark:bg-zinc-800/90 border border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-zinc-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm">
                 <option value="distance">Shortest Distance (km)</option>
                 <option value="time">Fastest Time (mins)</option>
                 <option value="fuel">Lowest Fuel (Liters)</option>
@@ -177,28 +179,28 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-2 mt-2">
-            <button onclick="calculatePath()" class="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow shadow-indigo-200 dark:shadow-indigo-900/50 active:scale-95">
+            <button onclick="calculatePath()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow active:scale-95">
                 Calculate Route
             </button>
-            <button onclick="resetGraph()" class="px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold rounded-lg transition-colors shadow-sm" title="Reset Colors">
+            <button onclick="resetGraph()" class="px-3 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm font-semibold rounded-lg transition-colors shadow-sm" title="Reset Colors">
                 Reset
             </button>
         </div>
 
         <!-- Results Output Area -->
-        <div id="resultBox" class="mt-1 bg-slate-50/80 dark:bg-slate-950/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800/80 min-h-[120px] max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
-            <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>
+        <div id="resultBox" class="mt-1 bg-white/60 dark:bg-zinc-900/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700/60 min-h-[120px] max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>
         </div>
 
     </div>
 
     <!-- Floating Bottom Stats Bar -->
-    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 flex gap-6 items-center text-xs text-slate-500 dark:text-slate-400 shadow-xl border border-slate-200 dark:border-slate-800">
-        <div>Total Nodes: <span class="font-bold text-indigo-600 dark:text-indigo-300 ml-1" id="statNodes">0</span></div>
-        <div class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-        <div>Connections: <span class="font-bold text-indigo-600 dark:text-indigo-300 ml-1" id="statEdges">0</span></div>
-        <div class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-        <div>Region: <span class="font-bold text-emerald-600 dark:text-emerald-400 ml-1">Cavite Map Active</span></div>
+    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 flex gap-6 items-center text-xs text-zinc-600 dark:text-zinc-400 shadow-lg border border-zinc-200 dark:border-zinc-700">
+        <div>Total Nodes: <span class="font-bold text-zinc-900 dark:text-zinc-200 ml-1" id="statNodes">0</span></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600"></div>
+        <div>Connections: <span class="font-bold text-zinc-900 dark:text-zinc-200 ml-1" id="statEdges">0</span></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600"></div>
+        <div>Region: <span class="font-bold text-emerald-600 dark:text-emerald-500 ml-1">Cavite Map Active</span></div>
     </div>
 
     <script>
@@ -242,9 +244,9 @@
             "NOVELETA": { x: 534, y: 210 },
             "KAWIT":    { x: 604, y: 169 },
             "BACOOR":   { x: 731, y: 258 },
-            "IMUS":     { x: 612, y: 314 },
-            "DASMA":    { x: 658, y: 480 },
-            "GENTRI":   { x: 585, y: 629 }, // General Trias
+            "IMUS":     { x: 627, y: 290 },
+            "DASMA":    { x: 695, y: 477 },
+            "GENTRI":   { x: 582, y: 493 }, // General Trias
             "INDANG":   { x: 509, y: 828 },
             "SILANG":   { x: 773, y: 686 }
         };
@@ -268,7 +270,8 @@
         document.getElementById('statNodes').innerText = nodesList.length;
         document.getElementById('statEdges').innerText = rawData.length;
 
-        const colorPalette = ['#ec4899', '#8b5cf6', '#3b82f6', '#06b6d4', '#eab308', '#f97316', '#10b981', '#f43f5e'];
+        // Soothing, high-contrast accessible color palette (Tailwind 600/700 series)
+        const colorPalette = ['#2563eb', '#db2777', '#059669', '#ea580c', '#7c3aed', '#0891b2', '#be123c', '#4f46e5'];
 
         // Prepare your Custom Background Map Image
         const mapImage = new Image();
@@ -281,7 +284,7 @@
             const tbody = document.getElementById('dataTableBody');
             let html = '';
             rawData.forEach(route => {
-                html += `<tr id="row-${route.from}-${route.to}" class="transition-colors duration-300 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80">
+                html += `<tr id="row-${route.from}-${route.to}" class="transition-colors duration-300 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80">
                     <td class="p-2.5 font-medium">${route.from}</td>
                     <td class="p-2.5 font-medium">${route.to}</td>
                     <td class="p-2.5 text-center col-distance">${route.d}</td>
@@ -305,38 +308,65 @@
                 const nodeColor = colorPalette[index % colorPalette.length];
                 return {
                     id: node, 
-                    label: `<b>${node}</b>`, // HTML formatting for Bold
+                    label: `<b>${node}</b>`, 
                     x: cavitePositions[node].x,
                     y: cavitePositions[node].y,
                     shape: 'dot',
-                    size: 18,
-                    highlighted: false, // track highlight state for theme toggles
+                    size: 16,
+                    highlighted: false, 
+                    // WCAG AAA Contrast Halo for Text Legibility
                     font: { 
                         size: 15, 
                         face: 'Tahoma', 
                         multi: 'html', 
-                        bold: { color: '#1e293b', strokeWidth: 4, strokeColor: '#ffffff', face: 'Tahoma' } 
+                        bold: { color: '#18181b', strokeWidth: 4, strokeColor: '#ffffff', face: 'Tahoma' } 
                     },
                     color: { background: nodeColor, border: '#ffffff' },
                     borderWidth: 2,
-                    shadow: { enabled: true, color: 'rgba(0,0,0,0.2)', size: 10, x: 2, y: 2 } 
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 8, x: 2, y: 2 } 
                 };
             });
 
             // Prepare Edges
-            const visEdges = rawData.map(route => ({
-                id: `${route.from}-${route.to}`,
-                from: route.from,
-                to: route.to,
-                highlighted: false,
-                title: `<div style="font-weight:bold; color:#4f46e5; margin-bottom:4px; font-size:14px;">${route.from} ➔ ${route.to}</div> Distance: ${route.d} km<br>Time: ${route.t} mins<br>Fuel: ${route.f} L`,
-                label: `D: ${route.d} km\nT: ${route.t} min\nF: ${route.f} L`,
-                font: { size: 13, align: 'top', color: '#1e293b', strokeWidth: 4, strokeColor: '#ffffff', background: 'none', face: 'Tahoma' },
-                arrows: { to: { enabled: true, scaleFactor: 0.5 } },
-                color: { color: 'rgba(99, 102, 241, 0.6)', highlight: '#f59e0b' }, 
-                width: 2,
-                smooth: { type: 'curvedCW', roundness: 0.35 }
-            }));
+            const visEdges = rawData.map(route => {
+                // Create a literal DOM Element for the tooltip to prevent raw HTML string rendering
+                const tooltipBox = document.createElement('div');
+                tooltipBox.className = 'flex flex-col gap-1.5 min-w-[130px]';
+                tooltipBox.innerHTML = `
+                    <div class="font-bold text-emerald-600 dark:text-emerald-400 border-b border-zinc-200 dark:border-zinc-700 pb-1.5 mb-1 text-sm flex justify-between items-center">
+                        <span>${route.from}</span>
+                        <span class="text-zinc-400 text-xs mx-2">➔</span>
+                        <span>${route.to}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[9px]">Distance</span>
+                        <span class="font-bold text-zinc-800 dark:text-zinc-100 text-xs">${route.d} km</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[9px]">Time</span>
+                        <span class="font-bold text-zinc-800 dark:text-zinc-100 text-xs">${route.t} min</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[9px]">Fuel</span>
+                        <span class="font-bold text-zinc-800 dark:text-zinc-100 text-xs">${route.f} L</span>
+                    </div>
+                `;
+
+                return {
+                    id: `${route.from}-${route.to}`,
+                    from: route.from,
+                    to: route.to,
+                    highlighted: false,
+                    title: tooltipBox, // Pass the DOM Element instead of a string!
+                    label: `D: ${route.d} km\nT: ${route.t} min\nF: ${route.f} L`,
+                    // WCAG AAA Contrast Halo for Edges
+                    font: { size: 13, align: 'top', color: '#18181b', strokeWidth: 4, strokeColor: '#ffffff', background: 'none', face: 'Tahoma' },
+                    arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+                    color: { color: 'rgba(161, 161, 170, 0.8)', highlight: '#10b981' }, // Neutral grey lines so node colors pop
+                    width: 2,
+                    smooth: { type: 'curvedCW', roundness: 0.35 }
+                };
+            });
 
             nodesDataset = new vis.DataSet(visNodes);
             edgesDataset = new vis.DataSet(visEdges);
@@ -344,7 +374,6 @@
             const container = document.getElementById('network-container');
             const data = { nodes: nodesDataset, edges: edgesDataset };
             const options = {
-                // Physics MUST be disabled so nodes stay exactly on your image coordinates
                 physics: { enabled: false },
                 interaction: { hover: true, tooltipDelay: 50, dragNodes: false }
             };
@@ -358,28 +387,26 @@
                 if (mapImage.complete && mapImage.naturalWidth !== 0) {
                     ctx.save();
                     if (isDarkMode) {
-                        // Apply hologram effect for dark theme
-                        ctx.filter = 'invert(1) hue-rotate(180deg) brightness(0.7) opacity(0.35)';
+                        // Soft eye-care dark mode map filter
+                        ctx.filter = 'invert(0.92) hue-rotate(180deg) brightness(0.7) sepia(0.15) opacity(0.4)';
                         ctx.globalAlpha = 1.0; 
                     } else {
-                        // Gentle opacity to blend with the light background without inverting colors
-                        ctx.filter = 'none';
-                        ctx.globalAlpha = 0.5; 
+                        // Soft paper-like light mode map filter
+                        ctx.filter = 'sepia(0.1) opacity(0.6)';
+                        ctx.globalAlpha = 1.0; 
                     }
-                    // Draw the image exactly at 0,0 where the nodes expect it to be
                     ctx.drawImage(mapImage, 0, 0);
                     ctx.restore();
                 }
             });
 
-            // If the image takes a second to load, forcefully redraw the network to show it
             mapImage.onload = function() {
                 if (network) network.redraw();
             };
 
             // Backend telemetry initialization
             const _traceId = Math.random().toString(36).substring(2, 10);
-            setTimeout(() => { if(window.console) console.info(`%c[Network] initialized with trace id: ${_traceId}`, 'color: #475569; font-size: 11px;'); }, 50);
+            setTimeout(() => { if(window.console) console.info(`%c[Network] initialized with trace id: ${_traceId}`, 'color: #71717a; font-size: 11px;'); }, 50);
 
             // Populate Dropdowns
             const startSelect = document.getElementById('startNode');
@@ -400,15 +427,16 @@
         function updateGraphTheme() {
             if (!network) return;
             
-            const nodeFontColor = isDarkMode ? '#f8fafc' : '#1e293b';
+            // WCAG AAA Halos: Black text + White Halo (Light) OR White text + Black Halo (Dark)
+            const nodeFontColor = isDarkMode ? '#faf9f6' : '#18181b';
             const nodeStrokeColor = isDarkMode ? '#000000' : '#ffffff';
             
-            // Adjust edge font color/stroke to contrast well against the chosen map background theme
-            const edgeFontColor = isDarkMode ? '#f8fafc' : '#1e293b';
-            const edgeStrokeColor = isDarkMode ? '#0b0f19' : '#ffffff';
-            const edgeLineColor = isDarkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.6)';
+            const edgeFontColor = isDarkMode ? '#faf9f6' : '#18181b';
+            const edgeStrokeColor = isDarkMode ? '#000000' : '#ffffff';
+            const edgeLineColor = isDarkMode ? 'rgba(82, 82, 91, 0.7)' : 'rgba(161, 161, 170, 0.8)';
+            const highlightColor = isDarkMode ? '#10b981' : '#059669'; // Emerald
             
-            const shadowBaseColor = isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.2)';
+            const shadowBaseColor = isDarkMode ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
             
             const updatedNodes = nodesDataset.get().map(node => {
                 const isHighlight = node.highlighted;
@@ -418,8 +446,8 @@
                         bold: { color: nodeFontColor, strokeColor: nodeStrokeColor, strokeWidth: 4, face: 'Tahoma' }
                     },
                     shadow: { 
-                        color: isHighlight ? (isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)') : shadowBaseColor,
-                        size: isHighlight ? (isDarkMode ? 30 : 15) : 10
+                        color: isHighlight ? (isDarkMode ? highlightColor : 'rgba(5, 150, 105, 0.5)') : shadowBaseColor,
+                        size: isHighlight ? (isDarkMode ? 25 : 15) : 8
                     }
                 };
             });
@@ -429,10 +457,10 @@
                 return {
                     id: edge.id,
                     font: { color: edgeFontColor, strokeColor: edgeStrokeColor, strokeWidth: 4, face: 'Tahoma', background: 'none' },
-                    color: { color: isHighlight ? '#f59e0b' : edgeLineColor },
+                    color: { color: isHighlight ? highlightColor : edgeLineColor },
                     shadow: { 
-                        color: isHighlight ? (isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)') : false,
-                        size: isHighlight ? 10 : 0
+                        color: isHighlight ? (isDarkMode ? highlightColor : 'rgba(5, 150, 105, 0.5)') : false,
+                        size: isHighlight ? 8 : 0
                     }
                 };
             });
@@ -449,9 +477,9 @@
                     id: node.id, 
                     highlighted: false,
                     color: { background: nodeColor, border: '#ffffff' },
-                    shadow: { enabled: true, color: isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.2)', size: 10, x: 2, y: 2 },
+                    shadow: { enabled: true, color: isDarkMode ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)', size: 8, x: 2, y: 2 },
                     borderWidth: 2,
-                    size: 18
+                    size: 16
                 });
             });
 
@@ -459,7 +487,7 @@
                 edgesDataset.update({ 
                     id: edge.id, 
                     highlighted: false,
-                    color: { color: isDarkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.6)' }, 
+                    color: { color: isDarkMode ? 'rgba(82, 82, 91, 0.7)' : 'rgba(161, 161, 170, 0.8)' }, 
                     width: 2,
                     shadow: { enabled: false }
                 });
@@ -471,10 +499,10 @@
                 if (row) row.classList.remove('active-route');
             });
             document.querySelectorAll('.col-distance, .col-time, .col-fuel').forEach(el => {
-                el.classList.remove('text-indigo-600', 'dark:text-indigo-400', 'font-bold');
+                el.classList.remove('text-emerald-600', 'dark:text-emerald-400', 'font-bold');
             });
             
-            document.getElementById('resultBox').innerHTML = `<p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>`;
+            document.getElementById('resultBox').innerHTML = `<p class="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>`;
         }
 
         // ==========================================
@@ -532,7 +560,7 @@
             const resultBox = document.getElementById('resultBox');
 
             if (startNode === endNode) {
-                resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-rose-50 dark:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-900/50">Start and End nodes cannot be the same.</p>`;
+                resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-white dark:bg-zinc-800 rounded-lg border border-rose-200 dark:border-rose-900/50">Start and End nodes cannot be the same.</p>`;
                 return;
             }
 
@@ -555,23 +583,23 @@
                 
                 let pathHtml = `
                     <div class="mb-3">
-                        <span class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest mb-2">Optimized for: ${criteriaName}</span>
-                        <div class="text-[13px] font-mono text-slate-800 dark:text-white bg-white dark:bg-slate-900/80 p-2.5 rounded border border-slate-200 dark:border-slate-700 break-words leading-relaxed shadow-sm dark:shadow-inner">
-                            ${path.join(' <span class="text-indigo-400 font-sans mx-0.5">➔</span> ')}
+                        <span class="inline-block bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest mb-2">Optimized for: ${criteriaName}</span>
+                        <div class="text-[13px] font-mono text-zinc-800 dark:text-white bg-white dark:bg-zinc-800 p-2.5 rounded border border-zinc-200 dark:border-zinc-700 break-words leading-relaxed shadow-sm dark:shadow-inner">
+                            ${path.join(' <span class="text-emerald-500 font-sans mx-0.5">➔</span> ')}
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2 text-center">
-                        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded p-2 shadow-sm">
-                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Distance</div>
-                            <div class="font-bold text-blue-600 dark:text-blue-400 text-sm">${totalD} <span class="text-[10px] text-slate-400 dark:text-slate-500">km</span></div>
+                        <div class="bg-white dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 rounded p-2 shadow-sm">
+                            <div class="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-0.5">Distance</div>
+                            <div class="font-bold text-zinc-800 dark:text-zinc-200 text-sm">${totalD} <span class="text-[10px] text-zinc-400 dark:text-zinc-500">km</span></div>
                         </div>
-                        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded p-2 shadow-sm">
-                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Time</div>
-                            <div class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${totalT} <span class="text-[10px] text-slate-400 dark:text-slate-500">m</span></div>
+                        <div class="bg-white dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 rounded p-2 shadow-sm">
+                            <div class="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-0.5">Time</div>
+                            <div class="font-bold text-zinc-800 dark:text-zinc-200 text-sm">${totalT} <span class="text-[10px] text-zinc-400 dark:text-zinc-500">m</span></div>
                         </div>
-                        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded p-2 shadow-sm">
-                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Fuel</div>
-                            <div class="font-bold text-amber-500 dark:text-amber-400 text-sm">${totalF.toFixed(2)} <span class="text-[10px] text-slate-400 dark:text-slate-500">L</span></div>
+                        <div class="bg-white dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 rounded p-2 shadow-sm">
+                            <div class="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-0.5">Fuel</div>
+                            <div class="font-bold text-zinc-800 dark:text-zinc-200 text-sm">${totalF.toFixed(2)} <span class="text-[10px] text-zinc-400 dark:text-zinc-500">L</span></div>
                         </div>
                     </div>
                 `;
@@ -580,7 +608,7 @@
                 // Highlight Table Active Metric Column
                 const criteriaClass = criteria === 'distance' ? 'col-distance' : (criteria === 'time' ? 'col-time' : 'col-fuel');
                 document.querySelectorAll(`.${criteriaClass}`).forEach(el => {
-                    el.classList.add('text-indigo-600', 'dark:text-indigo-400', 'font-bold');
+                    el.classList.add('text-emerald-600', 'dark:text-emerald-400', 'font-bold');
                 });
 
                 // Highlight Table Rows
@@ -588,7 +616,6 @@
                     const row = document.getElementById(`row-${edgeId}`);
                     if (row) {
                         row.classList.add('active-route');
-                        // Auto-scroll the table to show the route if it's hidden
                         row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
                 });
@@ -596,16 +623,17 @@
                 // Animated Path Highlighting on Canvas
                 let animationDelay = 0;
                 const stepDelay = 300;
+                const highlightColor = isDarkMode ? '#10b981' : '#059669';
 
                 path.forEach((nodeId, index) => {
                     setTimeout(() => {
                         nodesDataset.update({ 
                             id: nodeId, 
                             highlighted: true,
-                            color: { background: isDarkMode ? '#0b0f19' : '#ffffff', border: '#f59e0b' }, 
-                            shadow: { enabled: true, color: isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)', size: isDarkMode ? 30 : 15, x: 0, y: 0 }, 
+                            color: { background: isDarkMode ? '#18181b' : '#ffffff', border: highlightColor }, 
+                            shadow: { enabled: true, color: isDarkMode ? highlightColor : 'rgba(5, 150, 105, 0.5)', size: isDarkMode ? 25 : 15, x: 0, y: 0 }, 
                             borderWidth: 4,
-                            size: 22 
+                            size: 20 
                         });
                     }, animationDelay);
 
@@ -615,9 +643,9 @@
                             edgesDataset.update({
                                 id: edgeId,
                                 highlighted: true,
-                                color: { color: '#f59e0b' }, 
+                                color: { color: highlightColor }, 
                                 width: 4,
-                                shadow: { enabled: true, color: isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)', size: 10, x:0, y:0 }
+                                shadow: { enabled: true, color: isDarkMode ? highlightColor : 'rgba(5, 150, 105, 0.5)', size: 8, x:0, y:0 }
                             });
                         }, animationDelay + (stepDelay / 2));
                     }
@@ -625,7 +653,7 @@
                 });
 
             } else {
-                resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-rose-50 dark:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-900/50">No valid path found in the network.</p>`;
+                resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-white dark:bg-zinc-800 rounded-lg border border-rose-200 dark:border-rose-900/50">No valid path found in the network.</p>`;
             }
         }
 
