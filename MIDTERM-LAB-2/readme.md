@@ -3,7 +3,7 @@ Cavite Interactive Routing & Shortest Path Map
 
 A highly interactive web application that visualizes the shortest, fastest, and most fuel-efficient routes across the municipalities of Cavite, Philippines. Built for Midterm Lab 2, this project utilizes Dijkstra's Algorithm layered over a dynamic, custom-styled geographic network graph.
 
-🚀 Getting Started
+Getting Started
 ------------------
 
 Because this project is built entirely with client-side technologies, no local server, build step, or package manager is required.
@@ -19,7 +19,7 @@ Because this project is built entirely with client-side technologies, no local s
 
 > **Note:** For the background map to render correctly, the Cavite.png file must be strictly kept in the same root directory relative to the HTML file.
 
-🧠 Project Report
+Project Report
 -----------------
 
 ### 1\. Development Approach
