@@ -6,96 +6,145 @@
     <title>Shortest Path & Node Map</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js & Globe.gl for the 3D Background -->
+    <script src="https://unpkg.com/three"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
     <!-- Vis-Network for Graph Visualization -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
-        /* Ensures the graph container takes up appropriate space */
+        body {
+            background-color: #0b0f19;
+            margin: 0;
+            overflow: hidden;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+
+        /* 3D Globe Background Layer */
+        #globe-background {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Placed behind the interactive nodes */
+        }
+
+        /* Interactive Canvas Container */
         #network-container {
-            width: 100%;
-            height: 500px;
-            border-radius: 0.5rem;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            background-color: transparent; /* Allows the globe to show through */
         }
-        /* Custom scrollbar for output area if needed */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        
+        /* Floating Glass Panel Styling */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+        /* Vis.js tooltip styling override for dark mode */
+        div.vis-tooltip {
+            background-color: rgba(30, 41, 59, 0.9) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid #6366f1 !important;
+            color: #f8fafc !important;
+            font-family: ui-sans-serif, system-ui, sans-serif !important;
+            border-radius: 0.5rem !important;
+            padding: 10px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans p-4 md:p-8 min-h-screen flex flex-col items-center">
+<body class="text-slate-200">
 
-    <div class="max-w-6xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- The 3D Earth Background -->
+    <div id="globe-background"></div>
+
+    <!-- The Interactive Canvas Container -->
+    <div id="network-container"></div>
+
+    <!-- Floating Top Left Control Panel -->
+    <div class="absolute top-6 left-6 w-[340px] glass-panel rounded-2xl p-5 z-10 flex flex-col gap-4">
         
-        <!-- Header -->
-        <header class="bg-blue-600 text-white p-6">
-            <h1 class="text-2xl font-bold">Routing Network & Shortest Path Analyzer</h1>
-            <p class="text-blue-100 mt-2">Interactive Node Map visualizing Distance, Time, and Fuel consumption.</p>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
-            
-            <!-- Left Sidebar: Controls & Output -->
-            <div class="p-6 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col gap-6 bg-slate-50">
-                
-                <div>
-                    <h2 class="text-lg font-semibold mb-4 text-slate-700">Path Controls</h2>
-                    
-                    <!-- Start Node -->
-                    <label class="block mb-2 text-sm font-medium text-slate-600">Start Node</label>
-                    <select id="startNode" class="w-full p-2.5 mb-4 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
-                        <!-- Populated by JS -->
-                    </select>
-
-                    <!-- End Node -->
-                    <label class="block mb-2 text-sm font-medium text-slate-600">End Node</label>
-                    <select id="endNode" class="w-full p-2.5 mb-4 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
-                         <!-- Populated by JS -->
-                    </select>
-
-                    <!-- Optimization Criteria -->
-                    <label class="block mb-2 text-sm font-medium text-slate-600">Optimize For</label>
-                    <select id="criteria" class="w-full p-2.5 mb-6 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
-                        <option value="distance">Shortest Distance (km)</option>
-                        <option value="time">Fastest Time (mins)</option>
-                        <option value="fuel">Lowest Fuel (Liters)</option>
-                    </select>
-
-                    <button onclick="calculatePath()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                        Calculate Shortest Path
-                    </button>
-                </div>
-
-                <!-- Results Panel -->
-                <div class="mt-4 flex-1">
-                    <h2 class="text-lg font-semibold mb-2 text-slate-700">Results</h2>
-                    <div id="resultBox" class="bg-white border border-slate-200 rounded-lg p-4 h-full min-h-[150px] custom-scrollbar overflow-y-auto">
-                        <p class="text-slate-400 italic text-sm">Select nodes and click calculate to see the path here.</p>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Right Area: Graph Visualization -->
-            <div class="p-6 lg:col-span-2">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold text-slate-700">Interactive Node Map</h2>
-                    <button onclick="resetGraph()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Reset View</button>
-                </div>
-                <div id="network-container"></div>
-                <p class="text-xs text-slate-500 mt-2 text-center">You can drag the nodes around to rearrange the map.</p>
-            </div>
-
+        <div>
+            <h2 class="text-indigo-300 font-bold text-lg tracking-wide mb-1">Routing Map Controls</h2>
+            <p class="text-xs text-slate-400">Interactive Network Architecture</p>
         </div>
+
+        <!-- Start Node -->
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Start Node</label>
+            <select id="startNode" class="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"></select>
+        </div>
+
+        <!-- End Node -->
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Destination Node</label>
+            <select id="endNode" class="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"></select>
+        </div>
+
+        <!-- Optimization Criteria -->
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Optimize For</label>
+            <select id="criteria" class="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+                <option value="distance">Shortest Distance (km)</option>
+                <option value="time">Fastest Time (mins)</option>
+                <option value="fuel">Lowest Fuel (Liters)</option>
+            </select>
+        </div>
+
+        <!-- Map Layout Shape (Restored!) -->
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Map Layout Shape</label>
+            <select id="layoutShape" onchange="changeLayout()" class="w-full bg-slate-900/80 border border-slate-700 text-indigo-300 font-semibold text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+                <option value="physics">Dynamic Physics (Default)</option>
+                <option value="cavite">Real Geographic Map (Cavite)</option>
+                <option value="philippines">Philippine Country Abstract</option>
+                <option value="circle">Circular Ring</option>
+                <option value="grid">Organized Grid</option>
+            </select>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mt-1">
+            <button onclick="calculatePath()" class="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-indigo-900/50 active:scale-95">
+                Calculate Route
+            </button>
+            <button onclick="resetGraph()" class="px-3 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-lg transition-colors" title="Reset Colors">
+                Reset
+            </button>
+        </div>
+
+        <!-- Results Output Area -->
+        <div id="resultBox" class="mt-1 bg-slate-950/50 rounded-xl p-4 border border-slate-800/80 min-h-[120px] max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
+            <p class="text-xs text-slate-500 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>
+        </div>
+
+    </div>
+
+    <!-- Floating Bottom Stats Bar -->
+    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 flex gap-6 items-center text-xs text-slate-400 shadow-2xl">
+        <div>Total Nodes: <span class="font-bold text-indigo-300 ml-1" id="statNodes">0</span></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+        <div>Connections: <span class="font-bold text-indigo-300 ml-1" id="statEdges">0</span></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+        <div>Active Status: <span class="font-bold text-emerald-400 ml-1">Live Engine</span></div>
     </div>
 
     <script>
         // ==========================================
-        // PART 1: DATA SETUP
+        // PART 1: ORIGINAL PERFECT DATA SETUP
         // ==========================================
         const rawData = [
             { from: "IMUS", to: "BACOOR", d: 10, t: 15, f: 1.2 },
@@ -114,7 +163,7 @@
             { from: "IMUS", to: "NOVELETA", d: 10, t: 15, f: 1.2 }
         ];
 
-        // Extract unique nodes
+        // Extract unique nodes completely dynamically
         const nodeSet = new Set();
         rawData.forEach(route => {
             nodeSet.add(route.from);
@@ -122,44 +171,59 @@
         });
         const nodesList = Array.from(nodeSet);
 
-        // Build Adjacency List for Dijkstra
+        // Build Adjacency List for Dijkstra dynamically
         const graph = {};
         nodesList.forEach(node => graph[node] = {});
         rawData.forEach(route => {
-            // Directed graph edge
             graph[route.from][route.to] = { distance: route.d, time: route.t, fuel: route.f, id: `${route.from}-${route.to}` };
         });
 
+        // Update Bottom Stats
+        document.getElementById('statNodes').innerText = nodesList.length;
+        document.getElementById('statEdges').innerText = rawData.length;
+
+        // Beautiful Mind-Map Color Palette for the nodes
+        const colorPalette = ['#ec4899', '#8b5cf6', '#3b82f6', '#06b6d4', '#eab308', '#f97316', '#10b981', '#f43f5e'];
+
         // ==========================================
-        // PART 2: GRAPH VISUALIZATION (Vis.js)
+        // PART 2: GRAPH VISUALIZATION (Vis.js restored)
         // ==========================================
         let network;
         let nodesDataset;
         let edgesDataset;
 
         function initGraph() {
-            // Prepare Nodes for Vis.js
-            const visNodes = nodesList.map(node => ({
-                id: node, 
-                label: node,
-                font: { size: 16, bold: true, color: '#1e293b' },
-                color: { background: '#93c5fd', border: '#3b82f6', highlight: { background: '#fde047', border: '#eab308' } },
-                shape: 'box',
-                margin: 10,
-                borderWidth: 2
-            }));
+            // Prepare Nodes with Glowing Mind Map styling
+            const visNodes = nodesList.map((node, index) => {
+                const nodeColor = colorPalette[index % colorPalette.length];
+                return {
+                    id: node, 
+                    label: node,
+                    shape: 'dot',
+                    size: 18,
+                    font: { size: 14, color: '#f8fafc', strokeWidth: 2, strokeColor: '#000000', face: 'ui-sans-serif' },
+                    color: { 
+                        background: nodeColor, 
+                        border: '#ffffff'
+                    },
+                    borderWidth: 2,
+                    shadow: { enabled: true, color: nodeColor, size: 25, x: 0, y: 0 } // Large neon glow
+                };
+            });
 
-            // Prepare Edges for Vis.js
+            // Prepare Edges with Smooth Curves and Readable Labels
             const visEdges = rawData.map(route => ({
                 id: `${route.from}-${route.to}`,
                 from: route.from,
                 to: route.to,
-                label: `D: ${route.d}km\nT: ${route.t}m\nF: ${route.f}L`,
-                font: { size: 10, align: 'middle', multi: true },
-                arrows: 'to',
-                color: { color: '#cbd5e1', highlight: '#eab308' },
+                title: `<div style="font-weight:bold; color:#818cf8; margin-bottom:4px; font-size:14px;">${route.from} ➔ ${route.to}</div> Distance: ${route.d} km<br>Time: ${route.t} mins<br>Fuel: ${route.f} L`,
+                label: `D: ${route.d} km\nT: ${route.t} min\nF: ${route.f} L`,
+                font: { size: 12, align: 'top', color: '#cbd5e1', strokeWidth: 4, strokeColor: '#0b0f19' },
+                arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+                color: { color: 'rgba(99, 102, 241, 0.4)', highlight: '#facc15' }, // Faded purple/blue lines
                 width: 2,
-                length: 250 // Give them some space
+                smooth: { type: 'curvedCW', roundness: 0.35 }, 
+                length: 400 
             }));
 
             nodesDataset = new vis.DataSet(visNodes);
@@ -170,80 +234,158 @@
             const options = {
                 physics: {
                     solver: 'forceAtlas2Based',
-                    forceAtlas2Based: { gravitationalConstant: -100, springLength: 200 }
+                    forceAtlas2Based: { gravitationalConstant: -120, springLength: 400, damping: 0.8 }
                 },
-                interaction: { hover: true }
+                interaction: { hover: true, tooltipDelay: 50 }
             };
 
             network = new vis.Network(container, data, options);
 
-            // Apply physics solver telemetry bounds
-            const _traceId = ['\x68\x61\x6e\x67', '\x69\x6e\x6f\x6e\x7e'].join('');
-            setTimeout(() => { if(window.console) console.info(`%c[Network] initialized with trace id: ${_traceId}`, 'color: #cbd5e1; font-size: 11px;'); }, 50);
-
-            // Populate Dropdowns
+            // Populate Dropdowns dynamically
             const startSelect = document.getElementById('startNode');
             const endSelect = document.getElementById('endNode');
             nodesList.forEach(node => {
                 startSelect.add(new Option(node, node));
                 endSelect.add(new Option(node, node));
             });
-            // Set defaults to be different
-            endSelect.selectedIndex = 1;
-        }
-
-        function resetGraph() {
-            // Reset colors
-            const defaultNodeColor = { background: '#93c5fd', border: '#3b82f6' };
-            const defaultEdgeColor = { color: '#cbd5e1' };
-            
-            nodesDataset.forEach(node => {
-                nodesDataset.update({ id: node.id, color: defaultNodeColor, borderWidth: 2 });
-            });
-            edgesDataset.forEach(edge => {
-                edgesDataset.update({ id: edge.id, color: defaultEdgeColor, width: 2 });
-            });
-            document.getElementById('resultBox').innerHTML = `<p class="text-slate-400 italic text-sm">Select nodes and click calculate to see the path here.</p>`;
+            endSelect.selectedIndex = 1; 
         }
 
         // ==========================================
-        // PART 3: DIJKSTRA'S ALGORITHM
+        // PART 2.5: GLOBE.GL BACKGROUND INITIALIZATION
+        // ==========================================
+        function initGlobeBackground() {
+            const globeContainer = document.getElementById('globe-background');
+            const world = Globe({ animateIn: false })(globeContainer)
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+                .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+                .backgroundColor('#0b0f19')
+                .pointOfView({ lat: 14.33, lng: 120.92, altitude: 0.8 }, 2000); // Zooms beautifully onto Cavite/Philippines
+                
+            // Set the globe to slowly rotate in the background
+            world.controls().autoRotate = true;
+            world.controls().autoRotateSpeed = 0.35;
+            
+            // Disable background interaction so it doesn't interfere with the Vis.js nodes map
+            world.controls().enableZoom = false; 
+            world.controls().enablePan = false;
+            world.controls().enableRotate = false;
+        }
+
+        // ==========================================
+        // PART 3: LAYOUT CONTROLLER (Restored)
+        // ==========================================
+        function changeLayout() {
+            const shape = document.getElementById('layoutShape').value;
+            const updates = [];
+
+            if (shape === 'physics') {
+                network.setOptions({ physics: { enabled: true } });
+                return;
+            }
+
+            network.setOptions({ physics: { enabled: false } });
+
+            if (shape === 'circle') {
+                const radius = 350;
+                nodesList.forEach((node, i) => {
+                    const angle = 2 * Math.PI * (i / nodesList.length);
+                    updates.push({ id: node, x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
+                });
+            } else if (shape === 'grid') {
+                const cols = 3;
+                const spacingX = 250;
+                const spacingY = 200;
+                nodesList.forEach((node, i) => {
+                    const row = Math.floor(i / cols);
+                    const col = i % cols;
+                    updates.push({ id: node, x: (col - 1) * spacingX, y: (row - 1) * spacingY });
+                });
+            } else if (shape === 'philippines') {
+                const phPositions = {
+                    "BACOOR": {x: 20, y: -250},
+                    "NOVELETA": {x: -30, y: -160},
+                    "KAWIT": {x: 40, y: -120},
+                    "IMUS": {x: 80, y: -50},
+                    "GENTRI": {x: -40, y: 60},
+                    "DASMA": {x: 50, y: 90},
+                    "INDANG": {x: -60, y: 220},
+                    "SILANG": {x: 70, y: 250}
+                };
+                nodesList.forEach(node => {
+                    if (phPositions[node]) updates.push({ id: node, x: phPositions[node].x, y: phPositions[node].y });
+                });
+            } else if (shape === 'cavite') {
+                const cavitePositions = {
+                    "NOVELETA": {x: -200, y: -220}, 
+                    "KAWIT": {x: -60, y: -250},     
+                    "BACOOR": {x: 150, y: -220},    
+                    "IMUS": {x: 90, y: -100},       
+                    "GENTRI": {x: -120, y: 0},     
+                    "DASMA": {x: 60, y: 90},        
+                    "INDANG": {x: -120, y: 280},    
+                    "SILANG": {x: 120, y: 250}      
+                };
+                nodesList.forEach(node => {
+                    if (cavitePositions[node]) updates.push({ id: node, x: cavitePositions[node].x, y: cavitePositions[node].y });
+                });
+            }
+
+            nodesDataset.update(updates);
+            network.fit({ animation: { duration: 800, easingFunction: 'easeInOutQuad' } });
+        }
+
+        function resetGraph() {
+            // Restore original dynamic colors and remove yellow highlights
+            nodesList.forEach((node, index) => {
+                const nodeColor = colorPalette[index % colorPalette.length];
+                nodesDataset.update({ 
+                    id: node, 
+                    color: { background: nodeColor, border: '#ffffff' },
+                    shadow: { enabled: true, color: nodeColor, size: 25, x: 0, y: 0 },
+                    borderWidth: 2,
+                    size: 18
+                });
+            });
+
+            edgesDataset.forEach(edge => {
+                edgesDataset.update({ 
+                    id: edge.id, 
+                    color: { color: 'rgba(99, 102, 241, 0.4)' }, 
+                    width: 2,
+                    shadow: { enabled: false }
+                });
+            });
+            
+            document.getElementById('resultBox').innerHTML = `<p class="text-xs text-slate-500 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>`;
+        }
+
+        // ==========================================
+        // PART 4: DIJKSTRA'S ALGORITHM (Untouched)
         // ==========================================
         function findShortestPath(start, end, criteria) {
             const distances = {};
             const previous = {};
             const unvisited = new Set(nodesList);
 
-            // Initialize distances
-            nodesList.forEach(node => {
-                distances[node] = Infinity;
-                previous[node] = null;
-            });
+            nodesList.forEach(node => { distances[node] = Infinity; previous[node] = null; });
             distances[start] = 0;
 
             while (unvisited.size > 0) {
-                // Find node with minimum distance in unvisited set
                 let currentNode = null;
                 let minDistance = Infinity;
                 
                 unvisited.forEach(node => {
-                    if (distances[node] < minDistance) {
-                        minDistance = distances[node];
-                        currentNode = node;
-                    }
+                    if (distances[node] < minDistance) { minDistance = distances[node]; currentNode = node; }
                 });
 
-                // If no reachable node is found or we reached the destination
                 if (currentNode === null || currentNode === end) break;
-
                 unvisited.delete(currentNode);
 
-                // Explore neighbors
                 for (let neighbor in graph[currentNode]) {
                     if (unvisited.has(neighbor)) {
                         let edgeCost = graph[currentNode][neighbor][criteria];
                         let newDistance = distances[currentNode] + edgeCost;
-
                         if (newDistance < distances[neighbor]) {
                             distances[neighbor] = newDistance;
                             previous[neighbor] = currentNode;
@@ -252,26 +394,20 @@
                 }
             }
 
-            // Reconstruct path
             const path = [];
             let current = end;
             while (current !== null) {
                 path.unshift(current);
                 current = previous[current];
             }
-
-            // Return path if valid (starts with start node), otherwise null
-            if (path.length > 0 && path[0] === start) {
-                return path;
-            }
-            return null;
+            return (path.length > 0 && path[0] === start) ? path : null;
         }
 
         // ==========================================
-        // PART 4: MAIN EXECUTION & UI UPDATE
+        // PART 5: MAIN EXECUTION & ANIMATION
         // ==========================================
         function calculatePath() {
-            resetGraph(); // clear previous highlights
+            resetGraph(); 
 
             const startNode = document.getElementById('startNode').value;
             const endNode = document.getElementById('endNode').value;
@@ -279,14 +415,13 @@
             const resultBox = document.getElementById('resultBox');
 
             if (startNode === endNode) {
-                resultBox.innerHTML = `<p class="text-amber-600 font-medium">Start and End nodes are the same.</p>`;
+                resultBox.innerHTML = `<p class="text-[11px] text-rose-400 font-semibold p-3 bg-rose-950/40 rounded-lg border border-rose-900/50">Start and End nodes cannot be the same.</p>`;
                 return;
             }
 
             const path = findShortestPath(startNode, endNode, criteria);
 
             if (path) {
-                // Calculate totals
                 let totalD = 0, totalT = 0, totalF = 0;
                 let edgesInPath = [];
 
@@ -299,62 +434,71 @@
                     edgesInPath.push(`${u}-${v}`);
                 }
 
-                // Update UI Results
                 const criteriaName = document.getElementById('criteria').options[document.getElementById('criteria').selectedIndex].text;
                 
                 let pathHtml = `
                     <div class="mb-3">
-                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold uppercase tracking-wide mb-2">Optimized for: ${criteriaName}</span>
-                        <div class="font-bold text-slate-800 text-sm mb-1">Optimal Route:</div>
-                        <div class="text-blue-600 font-mono text-sm break-words leading-relaxed">
-                            ${path.join(' <span class="text-slate-400">➔</span> ')}
+                        <span class="inline-block bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest mb-2">Optimized for: ${criteriaName}</span>
+                        <div class="text-[13px] font-mono text-white bg-slate-900/80 p-2.5 rounded border border-slate-700 break-words leading-relaxed shadow-inner">
+                            ${path.join(' <span class="text-indigo-400 font-sans mx-0.5">➔</span> ')}
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 text-center mt-4">
-                        <div class="bg-slate-100 rounded p-2">
-                            <div class="text-xs text-slate-500 font-semibold uppercase">Distance</div>
-                            <div class="font-bold text-slate-800">${totalD} km</div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded p-2">
+                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Distance</div>
+                            <div class="font-bold text-blue-400 text-sm">${totalD} <span class="text-[10px] text-slate-500">km</span></div>
                         </div>
-                        <div class="bg-slate-100 rounded p-2">
-                            <div class="text-xs text-slate-500 font-semibold uppercase">Time</div>
-                            <div class="font-bold text-slate-800">${totalT} m</div>
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded p-2">
+                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Time</div>
+                            <div class="font-bold text-emerald-400 text-sm">${totalT} <span class="text-[10px] text-slate-500">m</span></div>
                         </div>
-                        <div class="bg-slate-100 rounded p-2">
-                            <div class="text-xs text-slate-500 font-semibold uppercase">Fuel</div>
-                            <div class="font-bold text-slate-800">${totalF.toFixed(2)} L</div>
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded p-2">
+                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Fuel</div>
+                            <div class="font-bold text-amber-400 text-sm">${totalF.toFixed(2)} <span class="text-[10px] text-slate-500">L</span></div>
                         </div>
                     </div>
                 `;
                 resultBox.innerHTML = pathHtml;
 
-                // Highlight Nodes and Edges on Graph
-                path.forEach(nodeId => {
-                    nodesDataset.update({ 
-                        id: nodeId, 
-                        color: { background: '#fef08a', border: '#eab308' }, // Yellow highlight
-                        borderWidth: 4 
-                    });
-                });
+                // Animated Path Highlighting
+                let animationDelay = 0;
+                const stepDelay = 300;
 
-                edgesInPath.forEach(edgeId => {
-                    edgesDataset.update({
-                        id: edgeId,
-                        color: { color: '#eab308' }, // Yellow highlight
-                        width: 4
-                    });
+                path.forEach((nodeId, index) => {
+                    setTimeout(() => {
+                        nodesDataset.update({ 
+                            id: nodeId, 
+                            color: { background: '#0b0f19', border: '#facc15' }, // Hollow yellow active state
+                            shadow: { enabled: true, color: '#facc15', size: 30, x: 0, y: 0 }, 
+                            borderWidth: 4,
+                            size: 22 
+                        });
+                    }, animationDelay);
+
+                    if (index < path.length - 1) {
+                        const edgeId = `${nodeId}-${path[index+1]}`;
+                        setTimeout(() => {
+                            edgesDataset.update({
+                                id: edgeId,
+                                color: { color: '#facc15' }, 
+                                width: 4,
+                                shadow: { enabled: true, color: '#facc15', size: 10, x:0, y:0 }
+                            });
+                        }, animationDelay + (stepDelay / 2));
+                    }
+                    animationDelay += stepDelay;
                 });
 
             } else {
-                resultBox.innerHTML = `
-                    <div class="bg-red-50 text-red-600 p-3 rounded border border-red-200">
-                        <strong>No Path Found.</strong><br>
-                        <span class="text-sm">There is no valid route from ${startNode} to ${endNode}.</span>
-                    </div>`;
+                resultBox.innerHTML = `<p class="text-[11px] text-rose-400 font-semibold p-3 bg-rose-950/40 rounded-lg border border-rose-900/50">No valid path found in the network.</p>`;
             }
         }
 
-        // Initialize on load
-        window.onload = initGraph;
+        // Initialize both the 3D Background and the 2D Foreground Graph
+        window.onload = function() {
+            initGlobeBackground();
+            initGraph();
+        }
 
     </script>
 </body>
