@@ -1,59 +1,80 @@
-Cavite Interactive Routing & Shortest Path Map
+Midterm Lab 2 - Cavite Shortest Path & Routing
 ==============================================
 
-A highly interactive web application that visualizes the shortest, fastest, and most fuel-efficient routes across the municipalities of Cavite, Philippines. Built for Midterm Lab 2, this project utilizes Dijkstra's Algorithm layered over a dynamic, custom-styled geographic network graph.
+I. Executive Summary
+--------------------
 
-Getting Started
-------------------
+For Midterm Lab 2, I developed a fully interactive Single-Page Application (SPA) designed to visualize and compute the optimal routes between various municipalities in Cavite. Instead of a traditional command-line interface, this project utilizes a web-based graphical interface that allows users to seamlessly calculate routes optimized for **Distance (km)**, **Time (mins)**, or **Fuel (Liters)**, complete with a visual animated overlay of the travel path.
 
-Because this project is built entirely with client-side technologies, no local server, build step, or package manager is required.
+II. Development Approach
+------------------------
 
-### Installation & Execution
+The project is built entirely with client-side web technologies to ensure it is lightweight and universally accessible without the need for a backend server.
 
-1.  Extract the source files to your local machine.
+*   **Technology Stack:** HTML5, JavaScript (ES6), and Tailwind CSS for rapid, responsive UI styling.
     
-2.  Ensure both index.html and Cavite.png are located in the same directory.
+*   **Data Structuring:** The provided routing table was modeled as a **Directed Graph** utilizing an adjacency list (JavaScript object), where each edge contains multiple weight properties (distance, time, and fuel).
     
-3.  Double-click index.html to open it in any modern web browser (Chrome, Firefox, Edge, Safari).
+*   **Graph Visualization:** I integrated the vis-network (Vis.js) library to handle canvas drawing. To achieve strict geographic accuracy, the physics engine was disabled, and nodes were manually pinned to exact X/Y pixel coordinates directly over a custom base map (media/Cavite.png).
     
-
-> **Note:** For the background map to render correctly, the Cavite.png file must be strictly kept in the same root directory relative to the HTML file.
-
-Project Report
------------------
-
-### 1\. Development Approach
-
-Instead of a standard command-line script outputting static text, I decided to build a **fully interactive Single-Page Application (SPA)** using HTML, JavaScript, and Tailwind CSS.
-
-*   **Data Structuring:** The raw data table was converted into a JavaScript array of objects and parsed into an adjacency list to represent a **Directed Graph**.
-    
-*   **Visual Representation:** I integrated the vis-network (Vis.js) library to render the graph. To achieve geographic accuracy, I disabled the library's default physics engine and manually pinned each node to its exact X/Y pixel coordinates directly over the Cavite.png base map.
-    
-*   **User Interface:** Tailwind CSS was utilized to build a "Glassmorphism" layout with floating, responsive control panels. It features dynamic Light/Dark themes and a live route directory table that auto-scrolls to highlight active paths.
+*   **UI/UX Design:** The interface features a "Glassmorphism" aesthetic with floating control panels, a live dynamic route directory, and WCAG-compliant Dark/Light themes.
     
 
-### 2\. Algorithm Used
+III. Algorithm Used
+-------------------
 
-To determine the optimal routes, I implemented **Dijkstra's Algorithm** in JavaScript.
+The core routing engine is powered by a custom JavaScript implementation of **Dijkstra's Algorithm**.
 
-*   **Why Dijkstra's?** It is the industry standard for finding the shortest paths between nodes in a graph with non-negative edge weights.
+*   **Why Dijkstra's?** It is the optimal, deterministic algorithm for finding the shortest paths between nodes in a graph with non-negative edge weights.
     
-*   **Implementation Details:** The algorithm uses a priority queue approach. It was written to dynamically accept a weight parameter (distance, time, or fuel). This allows a single function to seamlessly calculate the optimal path for any scenario based on the user's dropdown selection, making the code highly efficient and modular. Once the destination is reached, the algorithm reconstructs the path backwards using a previous node tracker.
+*   **Dynamic Implementation:** A traditional Dijkstra implementation evaluates a single, hardcoded weight. I enhanced the algorithm to accept a dynamic criteria parameter. During graph traversal, it evaluates graph\[currentNode\]\[neighbor\]\[criteria\], allowing the engine to instantly adapt to the user's dropdown selection (Distance, Time, or Fuel) without requiring separate pathfinding functions. Path reconstruction is achieved by tracing backward through a previous node mapping dictionary once the destination is reached.
     
 
-### 3\. Challenges Faced
+IV. Technical Challenges & Solutions
+------------------------------------
 
-During the development of this assignment, I encountered and overcame several technical hurdles:
+During development, several complex technical hurdles were successfully resolved:
 
-1.  **Coordinate Synchronization & Map Layering:** \* _Challenge:_ Layering the vis-network canvas directly over a static image meant that if the user zoomed or panned the map, the nodes would misalign from the background.
+1.  **Map Layering & Coordinate Synchronization**
     
-    *   _Solution:_ Instead of using standard CSS backgrounds, I used the HTML5 Canvas API to draw Cavite.png _inside_ the Vis.js render cycle (network.on("beforeDrawing")). This ensured the nodes and the map scale and pan perfectly together.
+    *   _Challenge:_ Layering the interactive node network over a static image meant zooming or panning the map would cause nodes to misalign from the background map.
         
-2.  **Dynamic Edge Weighting:** \* _Challenge:_ Standard Dijkstra implementations usually check a single, hardcoded weight (like distance).
-    
-    *   _Solution:_ I refactored the algorithm to accept a dynamic string key (criteria), allowing it to dynamically pull graph\[currentNode\]\[neighbor\]\[criteria\] on the fly depending on what the user is currently optimizing for.
+    *   _Solution:_ I utilized the HTML5 Canvas API within the Vis.js beforeDrawing hook to draw the Cavite.png map directly _inside_ the canvas coordinate system. This ensures the map scales, filters, and pans perfectly in sync with the interactive nodes.
         
-3.  **WCAG Accessibility & Contrast:** \* _Challenge:_ Depending on whether the user is in Light or Dark mode, the data labels (Distance, Time, Fuel) would occasionally blend into the complex geographic map background, making them hard to read.
+2.  **Animated GIF Rendering on Canvas**
     
-    *   _Solution:_ I implemented dynamic typography "halos" (text stroking). In Light Mode, text is dark slate wrapped in a thick white outline; in Dark Mode, it inverses. This guarantees a WCAG AAA contrast ratio so the numbers are always readable regardless of intersecting lines or background colors.
+    *   _Challenge:_ HTML5 Canvas does not natively support playing animated GIFs (it only renders the first frame). I needed the Travelling.gif car to animate as it traversed the path.
+        
+    *   _Solution:_ I detached the car from the canvas engine entirely. Instead, I created a floating DOM  element overlay. Using the afterDrawing event and the canvasToDOM() conversion method, I continuously updated the DOM overlay's exact screen pixels and CSS scale to precisely track the calculated canvas coordinates.
+        
+3.  **Dynamic Animation Speeds & Direction**
+    
+    *   _Challenge:_ A route taking 25 minutes shouldn't animate at the same visual speed as a route taking 10 minutes. Furthermore, the car needed to face the correct direction of travel.
+        
+    *   _Solution:_ The requestAnimationFrame loop computes a dynamic speed variable inversely proportional to the specific edge's cost. It also checks the difference in the X-axis (dx) between nodes to dynamically swap the image source between Travelling.gif and Travelling\_right.gif.
+        
+4.  **Visual Accessibility & Label Overlap**
+    
+    *   _Challenge:_ Text labels and connection lines occasionally blended into the detailed map background, rendering them illegible.
+        
+    *   _Solution:_ I implemented dynamic typography halos (heavy text stroking) and manipulated the vadjust property to push node labels strictly above the circles (vadjust: -75), guaranteeing perfect contrast and separation regardless of the underlying map colors or active Light/Dark themes.
+        
+
+V. Instructions for Execution
+-----------------------------
+
+This application requires no installation, package manager, or local server.
+
+1.  Ensure the directory structure is intact:
+    
+    *   MidtermLab2-Hanginon.html (or your main HTML file)
+        
+    *   media/Cavite.png
+        
+    *   media/Travelling.gif
+        
+    *   media/Travelling\_right.gif
+        
+2.  Double-click the HTML file (MidtermLab2-Hanginon.html) to open it in any modern web browser (Google Chrome, Firefox, Edge, or Safari).
+    
+3.  Use the floating control panel to select your start and end nodes, choose your optimization criteria, and click **Calculate Route**.

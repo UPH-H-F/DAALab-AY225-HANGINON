@@ -112,6 +112,9 @@
 
     <!-- The Interactive Canvas Container -->
     <div id="network-container"></div>
+    
+    <!-- Floating HTML Overlay for Animated GIF Car -->
+    <img id="animated-car-overlay" src="media/Travelling.gif" alt="Travel Car" class="hidden absolute z-10 pointer-events-none drop-shadow-2xl" style="width: 48px; height: 48px; transform: translate(-50%, -50%);" />
 
     <!-- Theme Toggle Button (Top Right) -->
     <div class="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
@@ -244,11 +247,11 @@
             "NOVELETA": { x: 534, y: 210 },
             "KAWIT":    { x: 604, y: 169 },
             "BACOOR":   { x: 731, y: 258 },
-            "IMUS":     { x: 627, y: 290 },
-            "DASMA":    { x: 695, y: 477 },
+            "IMUS":     { x: 617, y: 290 },
+            "DASMA":    { x: 697, y: 465 },
             "GENTRI":   { x: 582, y: 493 }, // General Trias
-            "INDANG":   { x: 509, y: 828 },
-            "SILANG":   { x: 773, y: 686 }
+            "INDANG":   { x: 509, y: 714 },
+            "SILANG":   { x: 780, y: 604 }
         };
 
         // Extract unique nodes dynamically
@@ -273,9 +276,12 @@
         // Soothing, high-contrast accessible color palette (Tailwind 600/700 series)
         const colorPalette = ['#2563eb', '#db2777', '#059669', '#ea580c', '#7c3aed', '#0891b2', '#be123c', '#4f46e5'];
 
-        // Prepare your Custom Background Map Image
+        // Prepare Image Assets
         const mapImage = new Image();
-        mapImage.src = 'Cavite.png'; // Points directly to your uploaded image
+        mapImage.src = 'media/Cavite.png'; 
+        
+        // Global State for the Car Renderer (Guarantees top layer drawing)
+        window.carState = { active: false, x: 0, y: 0, dx: 1 };
 
         // ==========================================
         // DATA TABLE INITIALIZATION
@@ -319,6 +325,7 @@
                         size: 15, 
                         face: 'Tahoma', 
                         multi: 'html', 
+                        vadjust: -75, // Pushes the label completely above the node circle
                         bold: { color: '#18181b', strokeWidth: 4, strokeColor: '#ffffff', face: 'Tahoma' } 
                     },
                     color: { background: nodeColor, border: '#ffffff' },
@@ -381,22 +388,54 @@
             network = new vis.Network(container, data, options);
 
             // ==========================================
-            // MAGIC: Draw your Cavite.png inside the Canvas
+            // DRAW CAVITE MAP - BACKGROUND LAYER
             // ==========================================
             network.on("beforeDrawing", function(ctx) {
                 if (mapImage.complete && mapImage.naturalWidth !== 0) {
                     ctx.save();
                     if (isDarkMode) {
-                        // Soft eye-care dark mode map filter
                         ctx.filter = 'invert(0.92) hue-rotate(180deg) brightness(0.7) sepia(0.15) opacity(0.4)';
                         ctx.globalAlpha = 1.0; 
                     } else {
-                        // Soft paper-like light mode map filter
                         ctx.filter = 'sepia(0.1) opacity(0.6)';
                         ctx.globalAlpha = 1.0; 
                     }
                     ctx.drawImage(mapImage, 0, 0);
                     ctx.restore();
+                }
+            });
+
+            // ==========================================
+            // SYNC ANIMATED GIF CAR OVERLAY
+            // ==========================================
+            network.on("afterDrawing", function(ctx) {
+                const carOverlay = document.getElementById('animated-car-overlay');
+                if (window.carState && window.carState.active) {
+                    // Convert canvas map coordinates to actual screen pixels
+                    const domPos = network.canvasToDOM({x: window.carState.x, y: window.carState.y});
+                    carOverlay.style.left = domPos.x + 'px';
+                    carOverlay.style.top = domPos.y + 'px';
+                    
+                    // Dynamically scale the car overlay to exactly match the network node size!
+                    // Change the multiplier below (48) to scale the car proportionally
+                    const currentScale = network.getScale();
+                    const scaledSize = 48 * currentScale; 
+                    carOverlay.style.width = scaledSize + 'px';
+                    carOverlay.style.height = scaledSize + 'px';
+                    
+                    // Update image direction
+                    const expectedSrc = window.carState.dx > 0 ? 'media/Travelling_right.gif' : 'media/Travelling.gif';
+                    if (!carOverlay.src.includes(expectedSrc)) {
+                        carOverlay.src = expectedSrc;
+                    }
+                    
+                    if (carOverlay.classList.contains('hidden')) {
+                        carOverlay.classList.remove('hidden');
+                    }
+                } else {
+                    if (!carOverlay.classList.contains('hidden')) {
+                        carOverlay.classList.add('hidden');
+                    }
                 }
             });
 
@@ -439,11 +478,11 @@
             const shadowBaseColor = isDarkMode ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
             
             const updatedNodes = nodesDataset.get().map(node => {
-                if (node.id === 'travel-car') return node; // Skip the car image
                 const isHighlight = node.highlighted;
                 return {
                     id: node.id,
                     font: { 
+                        vadjust: -75, // Maintain label position well above the node
                         bold: { color: nodeFontColor, strokeColor: nodeStrokeColor, strokeWidth: 4, face: 'Tahoma' }
                     },
                     shadow: { 
@@ -477,9 +516,9 @@
                 cancelAnimationFrame(window.carAnimationId);
                 window.carAnimationId = null;
             }
-            if (nodesDataset.get('travel-car')) {
-                nodesDataset.remove('travel-car');
-            }
+            window.carState.active = false;
+            // Force redraw immediately so the GIF overlay hides
+            if (network) network.redraw();
 
             nodesDataset.get().forEach((node, index) => {
                 const nodeColor = colorPalette[index % colorPalette.length];
@@ -513,6 +552,8 @@
             });
             
             document.getElementById('resultBox').innerHTML = `<p class="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>`;
+            
+            network.redraw();
         }
 
         // ==========================================
@@ -563,34 +604,25 @@
         // ==========================================
         window.carAnimationId = null;
 
-        function animateCar(path) {
+        function animateCar(path, criteria) {
             if (path.length < 2) return;
 
             const positions = network.getPositions();
-
-            // Calculate the initial direction to determine which image to use
-            const startPosInitial = positions[path[0]];
-            const endPosInitial = positions[path[1]];
-            const initialDx = endPosInitial.x - startPosInitial.x;
             
-            // If the car moves to the right (dx > 0), use the flipped image
-            const initialImage = initialDx > 0 ? 'Travelling_right.png' : 'Travelling.png';
-
-            // Add the car node at the starting position
-            nodesDataset.add({
-                id: 'travel-car',
-                shape: 'image',
-                image: initialImage,
-                size: 24, // Sized roughly the same as standard nodes
-                x: startPosInitial.x,
-                y: startPosInitial.y,
-                physics: false,
-                shadow: { enabled: true, color: 'rgba(0,0,0,0.4)', size: 6, x: 2, y: 2 }
-            });
+            // Set initial state
+            window.carState.active = true;
+            window.carState.x = positions[path[0]].x;
+            window.carState.y = positions[path[0]].y;
+            window.carState.dx = positions[path[1]].x - positions[path[0]].x;
+            network.redraw();
 
             let currentSegment = 0;
             let progress = 0;
-            const speed = 0.015; // Adjust this to make the car move faster or slower
+            
+            // Base speed multipliers depending on the criteria scale
+            let speedMultiplier = 0.2; 
+            if (criteria === 'time') speedMultiplier = 0.3;
+            else if (criteria === 'fuel') speedMultiplier = 0.02;
 
             function step() {
                 if (currentSegment >= path.length - 1) return; // Reached destination
@@ -600,7 +632,12 @@
                 const startPos = positions[startNode];
                 const endPos = positions[endNode];
 
-                progress += speed;
+                // Fetch the actual value of this specific route segment from the graph
+                const edgeWeight = graph[startNode][endNode][criteria];
+                
+                // Dynamic speed calculation: Higher value = Slower animation
+                const currentSpeed = speedMultiplier / edgeWeight;
+                progress += currentSpeed;
                 
                 if (progress >= 1) {
                     progress = 0;
@@ -608,30 +645,25 @@
                     
                     if (currentSegment >= path.length - 1) {
                         // Snap exactly to final destination
-                        network.moveNode('travel-car', positions[path[path.length-1]].x, positions[path[path.length-1]].y);
+                        window.carState.x = positions[path[path.length-1]].x;
+                        window.carState.y = positions[path[path.length-1]].y;
+                        network.redraw();
                         return;
                     }
                     
                     // The car is starting a new segment, calculate new direction
                     const nextStartNode = path[currentSegment];
                     const nextEndNode = path[currentSegment + 1];
-                    const nextStartPos = positions[nextStartNode];
-                    const nextEndPos = positions[nextEndNode];
-                    
-                    const dx = nextEndPos.x - nextStartPos.x;
-                    
-                    // Update car image dynamically depending on direction
-                    nodesDataset.update({
-                        id: 'travel-car',
-                        image: dx > 0 ? 'Travelling_right.png' : 'Travelling.png'
-                    });
+                    window.carState.dx = positions[nextEndNode].x - positions[nextStartNode].x;
                     
                 } else {
                     // Interpolate coordinates for smooth movement
-                    const currentX = startPos.x + (endPos.x - startPos.x) * progress;
-                    const currentY = startPos.y + (endPos.y - startPos.y) * progress;
-                    network.moveNode('travel-car', currentX, currentY);
+                    window.carState.x = startPos.x + (endPos.x - startPos.x) * progress;
+                    window.carState.y = startPos.y + (endPos.y - startPos.y) * progress;
                 }
+                
+                // Trigger the afterDrawing hook to move the DOM element
+                network.redraw();
                 window.carAnimationId = requestAnimationFrame(step);
             }
             
@@ -741,7 +773,7 @@
 
                 // Launch the car animation immediately after the path visualization finishes
                 setTimeout(() => {
-                    animateCar(path);
+                    animateCar(path, criteria); 
                 }, animationDelay);
 
             } else {
