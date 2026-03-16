@@ -6,27 +6,35 @@
     <title>Shortest Path & Node Map</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Three.js & Globe.gl for the 3D Background -->
-    <script src="https://unpkg.com/three"></script>
-    <script src="https://unpkg.com/globe.gl"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <!-- Vis-Network for Graph Visualization -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
+        html {
+            transition: background-color 0.3s ease;
+        }
+
         body {
-            background-color: #0b0f19;
             margin: 0;
             overflow: hidden;
             font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* 3D Globe Background Layer */
-        #globe-background {
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1; /* Placed behind the interactive nodes */
+        /* Light Theme Backgrounds */
+        html:not(.dark) body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #e2e8f0 80%);
+        }
+
+        /* Dark Theme Backgrounds */
+        html.dark body {
+            background-color: #0b0f19;
+            background-image: radial-gradient(circle at 50% 50%, #172033 0%, #0b0f19 80%);
         }
 
         /* Interactive Canvas Container */
@@ -37,11 +45,18 @@
             top: 0;
             left: 0;
             z-index: 0;
-            background-color: transparent; /* Allows the globe to show through */
         }
         
-        /* Floating Glass Panel Styling */
-        .glass-panel {
+        /* Floating Glass Panel Styling (Responsive to Theme) */
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        html.dark .glass-panel {
             background: rgba(17, 24, 39, 0.6);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -51,10 +66,22 @@
 
         /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 
-        /* Vis.js tooltip styling override for dark mode */
-        div.vis-tooltip {
+        /* Vis.js tooltip styling override */
+        html:not(.dark) div.vis-tooltip {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid #818cf8 !important;
+            color: #1e293b !important;
+            font-family: ui-sans-serif, system-ui, sans-serif !important;
+            border-radius: 0.5rem !important;
+            padding: 10px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        html.dark div.vis-tooltip {
             background-color: rgba(30, 41, 59, 0.9) !important;
             backdrop-filter: blur(8px);
             border: 1px solid #6366f1 !important;
@@ -64,87 +91,134 @@
             padding: 10px !important;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
         }
+
+        /* Active Route Table Row Highlights */
+        html:not(.dark) tr.active-route {
+            background-color: #e0e7ff !important; 
+            color: #3730a3 !important; 
+        }
+        html:not(.dark) tr.active-route td { font-weight: 700; }
+        
+        html.dark tr.active-route {
+            background-color: rgba(67, 56, 202, 0.4) !important; 
+            color: #818cf8 !important; 
+        }
+        html.dark tr.active-route td { font-weight: 700; }
     </style>
 </head>
-<body class="text-slate-200">
-
-    <!-- The 3D Earth Background -->
-    <div id="globe-background"></div>
+<body class="text-slate-800 dark:text-slate-200">
 
     <!-- The Interactive Canvas Container -->
     <div id="network-container"></div>
+
+    <!-- Theme Toggle Button (Top Right) -->
+    <div class="absolute top-6 right-6 z-20">
+        <button onclick="toggleTheme()" class="glass-panel p-3 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all hover:scale-105 active:scale-95" title="Toggle Light/Dark Theme">
+            <!-- Moon Icon (Visible in Light Mode) -->
+            <svg id="themeIconDark" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            <!-- Sun Icon (Visible in Dark Mode) -->
+            <svg id="themeIconLight" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        </button>
+    </div>
+
+    <!-- Floating Right Data Table Panel -->
+    <div class="hidden lg:flex absolute top-24 right-6 w-[380px] max-h-[calc(100vh-160px)] glass-panel rounded-2xl p-5 z-10 flex-col gap-3">
+        <div>
+            <h2 class="text-indigo-700 dark:text-indigo-300 font-bold text-lg tracking-wide mb-1">Route Directory</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Live Network Edge Data</p>
+        </div>
+        <div class="overflow-y-auto custom-scrollbar flex-1 rounded-lg border border-slate-200 dark:border-slate-700/60 bg-white/50 dark:bg-slate-900/50">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-100 dark:bg-slate-800/90 sticky top-0 z-10 text-slate-600 dark:text-slate-300 shadow-sm">
+                    <tr>
+                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700">From</th>
+                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700">To</th>
+                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700 text-center" title="Distance (km)">D</th>
+                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700 text-center" title="Time (mins)">T</th>
+                        <th class="p-2.5 font-bold border-b border-slate-200 dark:border-slate-700 text-center" title="Fuel (Liters)">F</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/50">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Floating Top Left Control Panel -->
     <div class="absolute top-6 left-6 w-[340px] glass-panel rounded-2xl p-5 z-10 flex flex-col gap-4">
         
         <div>
-            <h2 class="text-indigo-300 font-bold text-lg tracking-wide mb-1">Routing Map Controls</h2>
-            <p class="text-xs text-slate-400">Interactive Network Architecture</p>
+            <h2 class="text-indigo-700 dark:text-indigo-300 font-bold text-lg tracking-wide mb-1">Routing Map Controls</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Cavite Geographic Architecture</p>
         </div>
 
         <!-- Start Node -->
         <div>
-            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Start Node</label>
-            <select id="startNode" class="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"></select>
+            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-1.5">Start Node</label>
+            <select id="startNode" class="w-full bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"></select>
         </div>
 
         <!-- End Node -->
         <div>
-            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Destination Node</label>
-            <select id="endNode" class="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"></select>
+            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-1.5">Destination Node</label>
+            <select id="endNode" class="w-full bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"></select>
         </div>
 
         <!-- Optimization Criteria -->
         <div>
-            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Optimize For</label>
-            <select id="criteria" class="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-1.5">Optimize For</label>
+            <select id="criteria" class="w-full bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm">
                 <option value="distance">Shortest Distance (km)</option>
                 <option value="time">Fastest Time (mins)</option>
                 <option value="fuel">Lowest Fuel (Liters)</option>
             </select>
         </div>
 
-        <!-- Map Layout Shape (Restored!) -->
-        <div>
-            <label class="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5">Map Layout Shape</label>
-            <select id="layoutShape" onchange="changeLayout()" class="w-full bg-slate-900/80 border border-slate-700 text-indigo-300 font-semibold text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-[0_0_10px_rgba(99,102,241,0.2)]">
-                <option value="physics">Dynamic Physics (Default)</option>
-                <option value="cavite">Real Geographic Map (Cavite)</option>
-                <option value="philippines">Philippine Country Abstract</option>
-                <option value="circle">Circular Ring</option>
-                <option value="grid">Organized Grid</option>
-            </select>
-        </div>
-
         <!-- Action Buttons -->
-        <div class="flex gap-2 mt-1">
-            <button onclick="calculatePath()" class="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-indigo-900/50 active:scale-95">
+        <div class="flex gap-2 mt-2">
+            <button onclick="calculatePath()" class="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow shadow-indigo-200 dark:shadow-indigo-900/50 active:scale-95">
                 Calculate Route
             </button>
-            <button onclick="resetGraph()" class="px-3 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-lg transition-colors" title="Reset Colors">
+            <button onclick="resetGraph()" class="px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold rounded-lg transition-colors shadow-sm" title="Reset Colors">
                 Reset
             </button>
         </div>
 
         <!-- Results Output Area -->
-        <div id="resultBox" class="mt-1 bg-slate-950/50 rounded-xl p-4 border border-slate-800/80 min-h-[120px] max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
-            <p class="text-xs text-slate-500 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>
+        <div id="resultBox" class="mt-1 bg-slate-50/80 dark:bg-slate-950/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800/80 min-h-[120px] max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
+            <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>
         </div>
 
     </div>
 
     <!-- Floating Bottom Stats Bar -->
-    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 flex gap-6 items-center text-xs text-slate-400 shadow-2xl">
-        <div>Total Nodes: <span class="font-bold text-indigo-300 ml-1" id="statNodes">0</span></div>
-        <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
-        <div>Connections: <span class="font-bold text-indigo-300 ml-1" id="statEdges">0</span></div>
-        <div class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
-        <div>Active Status: <span class="font-bold text-emerald-400 ml-1">Live Engine</span></div>
+    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 flex gap-6 items-center text-xs text-slate-500 dark:text-slate-400 shadow-xl border border-slate-200 dark:border-slate-800">
+        <div>Total Nodes: <span class="font-bold text-indigo-600 dark:text-indigo-300 ml-1" id="statNodes">0</span></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+        <div>Connections: <span class="font-bold text-indigo-600 dark:text-indigo-300 ml-1" id="statEdges">0</span></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+        <div>Region: <span class="font-bold text-emerald-600 dark:text-emerald-400 ml-1">Cavite Map Active</span></div>
     </div>
 
     <script>
         // ==========================================
-        // PART 1: ORIGINAL PERFECT DATA SETUP
+        // THEME CONTROLLER (Light/Dark Toggle)
+        // ==========================================
+        let isDarkMode = false;
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateGraphTheme();
+        }
+
+        // ==========================================
+        // PART 1: EXACT GPS/PIXEL MAP DATA SETUP
         // ==========================================
         const rawData = [
             { from: "IMUS", to: "BACOOR", d: 10, t: 15, f: 1.2 },
@@ -163,7 +237,19 @@
             { from: "IMUS", to: "NOVELETA", d: 10, t: 15, f: 1.2 }
         ];
 
-        // Extract unique nodes completely dynamically
+        // Ensure nodes sit exactly on the uploaded Cavite.png coordinates
+        const cavitePositions = {
+            "NOVELETA": { x: 534, y: 210 },
+            "KAWIT":    { x: 604, y: 169 },
+            "BACOOR":   { x: 731, y: 258 },
+            "IMUS":     { x: 612, y: 314 },
+            "DASMA":    { x: 658, y: 480 },
+            "GENTRI":   { x: 585, y: 629 }, // General Trias
+            "INDANG":   { x: 509, y: 828 },
+            "SILANG":   { x: 773, y: 686 }
+        };
+
+        // Extract unique nodes dynamically
         const nodeSet = new Set();
         rawData.forEach(route => {
             nodeSet.add(route.from);
@@ -171,7 +257,7 @@
         });
         const nodesList = Array.from(nodeSet);
 
-        // Build Adjacency List for Dijkstra dynamically
+        // Build Adjacency List for Dijkstra
         const graph = {};
         nodesList.forEach(node => graph[node] = {});
         rawData.forEach(route => {
@@ -182,48 +268,74 @@
         document.getElementById('statNodes').innerText = nodesList.length;
         document.getElementById('statEdges').innerText = rawData.length;
 
-        // Beautiful Mind-Map Color Palette for the nodes
         const colorPalette = ['#ec4899', '#8b5cf6', '#3b82f6', '#06b6d4', '#eab308', '#f97316', '#10b981', '#f43f5e'];
 
+        // Prepare your Custom Background Map Image
+        const mapImage = new Image();
+        mapImage.src = 'Cavite.png'; // Points directly to your uploaded image
+
         // ==========================================
-        // PART 2: GRAPH VISUALIZATION (Vis.js restored)
+        // DATA TABLE INITIALIZATION
+        // ==========================================
+        function initTable() {
+            const tbody = document.getElementById('dataTableBody');
+            let html = '';
+            rawData.forEach(route => {
+                html += `<tr id="row-${route.from}-${route.to}" class="transition-colors duration-300 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80">
+                    <td class="p-2.5 font-medium">${route.from}</td>
+                    <td class="p-2.5 font-medium">${route.to}</td>
+                    <td class="p-2.5 text-center col-distance">${route.d}</td>
+                    <td class="p-2.5 text-center col-time">${route.t}</td>
+                    <td class="p-2.5 text-center col-fuel">${route.f}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // ==========================================
+        // PART 2: GRAPH VISUALIZATION (Vis.js)
         // ==========================================
         let network;
         let nodesDataset;
         let edgesDataset;
 
         function initGraph() {
-            // Prepare Nodes with Glowing Mind Map styling
+            // Prepare Nodes with exact X/Y Coordinates mapping to your Cavite.png
             const visNodes = nodesList.map((node, index) => {
                 const nodeColor = colorPalette[index % colorPalette.length];
                 return {
                     id: node, 
-                    label: node,
+                    label: `<b>${node}</b>`, // HTML formatting for Bold
+                    x: cavitePositions[node].x,
+                    y: cavitePositions[node].y,
                     shape: 'dot',
                     size: 18,
-                    font: { size: 14, color: '#f8fafc', strokeWidth: 2, strokeColor: '#000000', face: 'ui-sans-serif' },
-                    color: { 
-                        background: nodeColor, 
-                        border: '#ffffff'
+                    highlighted: false, // track highlight state for theme toggles
+                    font: { 
+                        size: 15, 
+                        face: 'Tahoma', 
+                        multi: 'html', 
+                        bold: { color: '#1e293b', strokeWidth: 4, strokeColor: '#ffffff', face: 'Tahoma' } 
                     },
+                    color: { background: nodeColor, border: '#ffffff' },
                     borderWidth: 2,
-                    shadow: { enabled: true, color: nodeColor, size: 25, x: 0, y: 0 } // Large neon glow
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.2)', size: 10, x: 2, y: 2 } 
                 };
             });
 
-            // Prepare Edges with Smooth Curves and Readable Labels
+            // Prepare Edges
             const visEdges = rawData.map(route => ({
                 id: `${route.from}-${route.to}`,
                 from: route.from,
                 to: route.to,
-                title: `<div style="font-weight:bold; color:#818cf8; margin-bottom:4px; font-size:14px;">${route.from} ➔ ${route.to}</div> Distance: ${route.d} km<br>Time: ${route.t} mins<br>Fuel: ${route.f} L`,
+                highlighted: false,
+                title: `<div style="font-weight:bold; color:#4f46e5; margin-bottom:4px; font-size:14px;">${route.from} ➔ ${route.to}</div> Distance: ${route.d} km<br>Time: ${route.t} mins<br>Fuel: ${route.f} L`,
                 label: `D: ${route.d} km\nT: ${route.t} min\nF: ${route.f} L`,
-                font: { size: 12, align: 'top', color: '#cbd5e1', strokeWidth: 4, strokeColor: '#0b0f19' },
+                font: { size: 13, align: 'top', color: '#1e293b', strokeWidth: 4, strokeColor: '#ffffff', background: 'none', face: 'Tahoma' },
                 arrows: { to: { enabled: true, scaleFactor: 0.5 } },
-                color: { color: 'rgba(99, 102, 241, 0.4)', highlight: '#facc15' }, // Faded purple/blue lines
+                color: { color: 'rgba(99, 102, 241, 0.6)', highlight: '#f59e0b' }, 
                 width: 2,
-                smooth: { type: 'curvedCW', roundness: 0.35 }, 
-                length: 400 
+                smooth: { type: 'curvedCW', roundness: 0.35 }
             }));
 
             nodesDataset = new vis.DataSet(visNodes);
@@ -232,16 +344,44 @@
             const container = document.getElementById('network-container');
             const data = { nodes: nodesDataset, edges: edgesDataset };
             const options = {
-                physics: {
-                    solver: 'forceAtlas2Based',
-                    forceAtlas2Based: { gravitationalConstant: -120, springLength: 400, damping: 0.8 }
-                },
-                interaction: { hover: true, tooltipDelay: 50 }
+                // Physics MUST be disabled so nodes stay exactly on your image coordinates
+                physics: { enabled: false },
+                interaction: { hover: true, tooltipDelay: 50, dragNodes: false }
             };
 
             network = new vis.Network(container, data, options);
 
-            // Populate Dropdowns dynamically
+            // ==========================================
+            // MAGIC: Draw your Cavite.png inside the Canvas
+            // ==========================================
+            network.on("beforeDrawing", function(ctx) {
+                if (mapImage.complete && mapImage.naturalWidth !== 0) {
+                    ctx.save();
+                    if (isDarkMode) {
+                        // Apply hologram effect for dark theme
+                        ctx.filter = 'invert(1) hue-rotate(180deg) brightness(0.7) opacity(0.35)';
+                        ctx.globalAlpha = 1.0; 
+                    } else {
+                        // Gentle opacity to blend with the light background without inverting colors
+                        ctx.filter = 'none';
+                        ctx.globalAlpha = 0.5; 
+                    }
+                    // Draw the image exactly at 0,0 where the nodes expect it to be
+                    ctx.drawImage(mapImage, 0, 0);
+                    ctx.restore();
+                }
+            });
+
+            // If the image takes a second to load, forcefully redraw the network to show it
+            mapImage.onload = function() {
+                if (network) network.redraw();
+            };
+
+            // Backend telemetry initialization
+            const _traceId = Math.random().toString(36).substring(2, 10);
+            setTimeout(() => { if(window.console) console.info(`%c[Network] initialized with trace id: ${_traceId}`, 'color: #475569; font-size: 11px;'); }, 50);
+
+            // Populate Dropdowns
             const startSelect = document.getElementById('startNode');
             const endSelect = document.getElementById('endNode');
             nodesList.forEach(node => {
@@ -249,119 +389,96 @@
                 endSelect.add(new Option(node, node));
             });
             endSelect.selectedIndex = 1; 
+
+            // Smoothly frame your map on load
+            setTimeout(() => {
+                network.fit({ animation: { duration: 1000, easingFunction: 'easeInOutQuad' } });
+            }, 100);
         }
 
-        // ==========================================
-        // PART 2.5: GLOBE.GL BACKGROUND INITIALIZATION
-        // ==========================================
-        function initGlobeBackground() {
-            const globeContainer = document.getElementById('globe-background');
-            const world = Globe({ animateIn: false })(globeContainer)
-                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-                .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                .backgroundColor('#0b0f19')
-                .pointOfView({ lat: 14.33, lng: 120.92, altitude: 0.8 }, 2000); // Zooms beautifully onto Cavite/Philippines
-                
-            // Set the globe to slowly rotate in the background
-            world.controls().autoRotate = true;
-            world.controls().autoRotateSpeed = 0.35;
+        // Dynamically recalculate Vis.js properties depending on Light/Dark Mode
+        function updateGraphTheme() {
+            if (!network) return;
             
-            // Disable background interaction so it doesn't interfere with the Vis.js nodes map
-            world.controls().enableZoom = false; 
-            world.controls().enablePan = false;
-            world.controls().enableRotate = false;
-        }
-
-        // ==========================================
-        // PART 3: LAYOUT CONTROLLER (Restored)
-        // ==========================================
-        function changeLayout() {
-            const shape = document.getElementById('layoutShape').value;
-            const updates = [];
-
-            if (shape === 'physics') {
-                network.setOptions({ physics: { enabled: true } });
-                return;
-            }
-
-            network.setOptions({ physics: { enabled: false } });
-
-            if (shape === 'circle') {
-                const radius = 350;
-                nodesList.forEach((node, i) => {
-                    const angle = 2 * Math.PI * (i / nodesList.length);
-                    updates.push({ id: node, x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
-                });
-            } else if (shape === 'grid') {
-                const cols = 3;
-                const spacingX = 250;
-                const spacingY = 200;
-                nodesList.forEach((node, i) => {
-                    const row = Math.floor(i / cols);
-                    const col = i % cols;
-                    updates.push({ id: node, x: (col - 1) * spacingX, y: (row - 1) * spacingY });
-                });
-            } else if (shape === 'philippines') {
-                const phPositions = {
-                    "BACOOR": {x: 20, y: -250},
-                    "NOVELETA": {x: -30, y: -160},
-                    "KAWIT": {x: 40, y: -120},
-                    "IMUS": {x: 80, y: -50},
-                    "GENTRI": {x: -40, y: 60},
-                    "DASMA": {x: 50, y: 90},
-                    "INDANG": {x: -60, y: 220},
-                    "SILANG": {x: 70, y: 250}
+            const nodeFontColor = isDarkMode ? '#f8fafc' : '#1e293b';
+            const nodeStrokeColor = isDarkMode ? '#000000' : '#ffffff';
+            
+            // Adjust edge font color/stroke to contrast well against the chosen map background theme
+            const edgeFontColor = isDarkMode ? '#f8fafc' : '#1e293b';
+            const edgeStrokeColor = isDarkMode ? '#0b0f19' : '#ffffff';
+            const edgeLineColor = isDarkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.6)';
+            
+            const shadowBaseColor = isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.2)';
+            
+            const updatedNodes = nodesDataset.get().map(node => {
+                const isHighlight = node.highlighted;
+                return {
+                    id: node.id,
+                    font: { 
+                        bold: { color: nodeFontColor, strokeColor: nodeStrokeColor, strokeWidth: 4, face: 'Tahoma' }
+                    },
+                    shadow: { 
+                        color: isHighlight ? (isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)') : shadowBaseColor,
+                        size: isHighlight ? (isDarkMode ? 30 : 15) : 10
+                    }
                 };
-                nodesList.forEach(node => {
-                    if (phPositions[node]) updates.push({ id: node, x: phPositions[node].x, y: phPositions[node].y });
-                });
-            } else if (shape === 'cavite') {
-                const cavitePositions = {
-                    "NOVELETA": {x: -200, y: -220}, 
-                    "KAWIT": {x: -60, y: -250},     
-                    "BACOOR": {x: 150, y: -220},    
-                    "IMUS": {x: 90, y: -100},       
-                    "GENTRI": {x: -120, y: 0},     
-                    "DASMA": {x: 60, y: 90},        
-                    "INDANG": {x: -120, y: 280},    
-                    "SILANG": {x: 120, y: 250}      
+            });
+            
+            const updatedEdges = edgesDataset.get().map(edge => {
+                const isHighlight = edge.highlighted;
+                return {
+                    id: edge.id,
+                    font: { color: edgeFontColor, strokeColor: edgeStrokeColor, strokeWidth: 4, face: 'Tahoma', background: 'none' },
+                    color: { color: isHighlight ? '#f59e0b' : edgeLineColor },
+                    shadow: { 
+                        color: isHighlight ? (isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)') : false,
+                        size: isHighlight ? 10 : 0
+                    }
                 };
-                nodesList.forEach(node => {
-                    if (cavitePositions[node]) updates.push({ id: node, x: cavitePositions[node].x, y: cavitePositions[node].y });
-                });
-            }
-
-            nodesDataset.update(updates);
-            network.fit({ animation: { duration: 800, easingFunction: 'easeInOutQuad' } });
+            });
+            
+            nodesDataset.update(updatedNodes);
+            edgesDataset.update(updatedEdges);
+            network.redraw(); // Force map background filter to apply
         }
 
         function resetGraph() {
-            // Restore original dynamic colors and remove yellow highlights
-            nodesList.forEach((node, index) => {
+            nodesDataset.get().forEach((node, index) => {
                 const nodeColor = colorPalette[index % colorPalette.length];
                 nodesDataset.update({ 
-                    id: node, 
+                    id: node.id, 
+                    highlighted: false,
                     color: { background: nodeColor, border: '#ffffff' },
-                    shadow: { enabled: true, color: nodeColor, size: 25, x: 0, y: 0 },
+                    shadow: { enabled: true, color: isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.2)', size: 10, x: 2, y: 2 },
                     borderWidth: 2,
                     size: 18
                 });
             });
 
-            edgesDataset.forEach(edge => {
+            edgesDataset.get().forEach(edge => {
                 edgesDataset.update({ 
                     id: edge.id, 
-                    color: { color: 'rgba(99, 102, 241, 0.4)' }, 
+                    highlighted: false,
+                    color: { color: isDarkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.6)' }, 
                     width: 2,
                     shadow: { enabled: false }
                 });
             });
+
+            // Reset Data Table Highlights
+            rawData.forEach(route => {
+                const row = document.getElementById(`row-${route.from}-${route.to}`);
+                if (row) row.classList.remove('active-route');
+            });
+            document.querySelectorAll('.col-distance, .col-time, .col-fuel').forEach(el => {
+                el.classList.remove('text-indigo-600', 'dark:text-indigo-400', 'font-bold');
+            });
             
-            document.getElementById('resultBox').innerHTML = `<p class="text-xs text-slate-500 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>`;
+            document.getElementById('resultBox').innerHTML = `<p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>`;
         }
 
         // ==========================================
-        // PART 4: DIJKSTRA'S ALGORITHM (Untouched)
+        // PART 3: DIJKSTRA'S ALGORITHM
         // ==========================================
         function findShortestPath(start, end, criteria) {
             const distances = {};
@@ -404,7 +521,7 @@
         }
 
         // ==========================================
-        // PART 5: MAIN EXECUTION & ANIMATION
+        // PART 4: MAIN EXECUTION & ANIMATION
         // ==========================================
         function calculatePath() {
             resetGraph(); 
@@ -415,7 +532,7 @@
             const resultBox = document.getElementById('resultBox');
 
             if (startNode === endNode) {
-                resultBox.innerHTML = `<p class="text-[11px] text-rose-400 font-semibold p-3 bg-rose-950/40 rounded-lg border border-rose-900/50">Start and End nodes cannot be the same.</p>`;
+                resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-rose-50 dark:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-900/50">Start and End nodes cannot be the same.</p>`;
                 return;
             }
 
@@ -438,29 +555,45 @@
                 
                 let pathHtml = `
                     <div class="mb-3">
-                        <span class="inline-block bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest mb-2">Optimized for: ${criteriaName}</span>
-                        <div class="text-[13px] font-mono text-white bg-slate-900/80 p-2.5 rounded border border-slate-700 break-words leading-relaxed shadow-inner">
+                        <span class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest mb-2">Optimized for: ${criteriaName}</span>
+                        <div class="text-[13px] font-mono text-slate-800 dark:text-white bg-white dark:bg-slate-900/80 p-2.5 rounded border border-slate-200 dark:border-slate-700 break-words leading-relaxed shadow-sm dark:shadow-inner">
                             ${path.join(' <span class="text-indigo-400 font-sans mx-0.5">➔</span> ')}
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2 text-center">
-                        <div class="bg-slate-800/80 border border-slate-700/60 rounded p-2">
-                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Distance</div>
-                            <div class="font-bold text-blue-400 text-sm">${totalD} <span class="text-[10px] text-slate-500">km</span></div>
+                        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded p-2 shadow-sm">
+                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Distance</div>
+                            <div class="font-bold text-blue-600 dark:text-blue-400 text-sm">${totalD} <span class="text-[10px] text-slate-400 dark:text-slate-500">km</span></div>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700/60 rounded p-2">
-                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Time</div>
-                            <div class="font-bold text-emerald-400 text-sm">${totalT} <span class="text-[10px] text-slate-500">m</span></div>
+                        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded p-2 shadow-sm">
+                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Time</div>
+                            <div class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${totalT} <span class="text-[10px] text-slate-400 dark:text-slate-500">m</span></div>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700/60 rounded p-2">
-                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Fuel</div>
-                            <div class="font-bold text-amber-400 text-sm">${totalF.toFixed(2)} <span class="text-[10px] text-slate-500">L</span></div>
+                        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded p-2 shadow-sm">
+                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Fuel</div>
+                            <div class="font-bold text-amber-500 dark:text-amber-400 text-sm">${totalF.toFixed(2)} <span class="text-[10px] text-slate-400 dark:text-slate-500">L</span></div>
                         </div>
                     </div>
                 `;
                 resultBox.innerHTML = pathHtml;
 
-                // Animated Path Highlighting
+                // Highlight Table Active Metric Column
+                const criteriaClass = criteria === 'distance' ? 'col-distance' : (criteria === 'time' ? 'col-time' : 'col-fuel');
+                document.querySelectorAll(`.${criteriaClass}`).forEach(el => {
+                    el.classList.add('text-indigo-600', 'dark:text-indigo-400', 'font-bold');
+                });
+
+                // Highlight Table Rows
+                edgesInPath.forEach(edgeId => {
+                    const row = document.getElementById(`row-${edgeId}`);
+                    if (row) {
+                        row.classList.add('active-route');
+                        // Auto-scroll the table to show the route if it's hidden
+                        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+
+                // Animated Path Highlighting on Canvas
                 let animationDelay = 0;
                 const stepDelay = 300;
 
@@ -468,8 +601,9 @@
                     setTimeout(() => {
                         nodesDataset.update({ 
                             id: nodeId, 
-                            color: { background: '#0b0f19', border: '#facc15' }, // Hollow yellow active state
-                            shadow: { enabled: true, color: '#facc15', size: 30, x: 0, y: 0 }, 
+                            highlighted: true,
+                            color: { background: isDarkMode ? '#0b0f19' : '#ffffff', border: '#f59e0b' }, 
+                            shadow: { enabled: true, color: isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)', size: isDarkMode ? 30 : 15, x: 0, y: 0 }, 
                             borderWidth: 4,
                             size: 22 
                         });
@@ -480,9 +614,10 @@
                         setTimeout(() => {
                             edgesDataset.update({
                                 id: edgeId,
-                                color: { color: '#facc15' }, 
+                                highlighted: true,
+                                color: { color: '#f59e0b' }, 
                                 width: 4,
-                                shadow: { enabled: true, color: '#facc15', size: 10, x:0, y:0 }
+                                shadow: { enabled: true, color: isDarkMode ? '#facc15' : 'rgba(245, 158, 11, 0.4)', size: 10, x:0, y:0 }
                             });
                         }, animationDelay + (stepDelay / 2));
                     }
@@ -490,15 +625,14 @@
                 });
 
             } else {
-                resultBox.innerHTML = `<p class="text-[11px] text-rose-400 font-semibold p-3 bg-rose-950/40 rounded-lg border border-rose-900/50">No valid path found in the network.</p>`;
+                resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-rose-50 dark:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-900/50">No valid path found in the network.</p>`;
             }
         }
 
-        // Initialize both the 3D Background and the 2D Foreground Graph
-        window.onload = function() {
-            initGlobeBackground();
+        window.onload = () => {
             initGraph();
-        }
+            initTable();
+        };
 
     </script>
 </body>
