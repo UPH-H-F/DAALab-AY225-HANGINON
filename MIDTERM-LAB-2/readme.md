@@ -1,50 +1,59 @@
-Midterm Lab 2: Node Map and Shortest Path Analysis
-==================================================
+Cavite Interactive Routing & Shortest Path Map
+==============================================
 
-Overview
---------
+A highly interactive web application that visualizes the shortest, fastest, and most fuel-efficient routes across the municipalities of Cavite, Philippines. Built for Midterm Lab 2, this project utilizes Dijkstra's Algorithm layered over a dynamic, custom-styled geographic network graph.
 
-This project is an interactive, web-based application designed to visualize a network of nodes (representing locations in Cavite) and calculate the optimal route between them based on three distinct criteria: Distance (km), Time (mins), and Fuel consumption (Liters).
+🚀 Getting Started
+------------------
 
-How to Run
-----------
+Because this project is built entirely with client-side technologies, no local server, build step, or package manager is required.
 
-Because this was built as a Single-Page Web Application, there are no complex dependencies or installations required.
+### Installation & Execution
 
-1.  Simply double-click the index.html file to open it in any modern web browser (e.g., Chrome, Edge, Safari).
+1.  Extract the source files to your local machine.
     
-2.  The application will immediately load the interactive map and the routing controls.
+2.  Ensure both index.html and Cavite.png are located in the same directory.
     
-
-Approach
---------
-
-Instead of a standard command-line script with a static image, I decided to build a **fully interactive web application** using HTML, JavaScript, and Tailwind CSS.
-
-*   **Data Structuring**: The data provided in the table was transcribed into a JavaScript array of objects and then parsed into an adjacency list to represent a **Directed Graph**.
-    
-*   **Visual Representation**: I utilized the vis-network library (Vis.js) to render the graph. This allows the user to click, drag, and interact with the nodes. The physics engine is configured to prevent nodes from overlapping while ensuring the network remains visually organized.
-    
-*   **User Interface**: Tailwind CSS was used to build a clean, responsive layout featuring dropdowns that allow the user to easily select their starting point, destination, and what metric they want to optimize for.
+3.  Double-click index.html to open it in any modern web browser (Chrome, Firefox, Edge, Safari).
     
 
-Algorithm Used
---------------
+> **Note:** For the background map to render correctly, the Cavite.png file must be strictly kept in the same root directory relative to the HTML file.
 
-To determine the shortest path, I implemented **Dijkstra's Algorithm** in JavaScript.**Why Dijkstra's Algorithm?**
+🧠 Project Report
+-----------------
 
-*   Dijkstra's is the industry standard for finding the shortest paths between nodes in a graph with non-negative edge weights.
+### 1\. Development Approach
+
+Instead of a standard command-line script outputting static text, I decided to build a **fully interactive Single-Page Application (SPA)** using HTML, JavaScript, and Tailwind CSS.
+
+*   **Data Structuring:** The raw data table was converted into a JavaScript array of objects and parsed into an adjacency list to represent a **Directed Graph**.
     
-*   It is highly adaptable. By passing the user's selected criteria (distance, time, or fuel) dynamically into the algorithm, the same function effortlessly calculates the optimal path for any scenario without needing to rewrite separate algorithms for each metric.
+*   **Visual Representation:** I integrated the vis-network (Vis.js) library to render the graph. To achieve geographic accuracy, I disabled the library's default physics engine and manually pinned each node to its exact X/Y pixel coordinates directly over the Cavite.png base map.
     
-*   Once the target destination is reached, the algorithm reconstructs the path backwards using a previous node tracking object, giving us the exact route to highlight on the map.
+*   **User Interface:** Tailwind CSS was utilized to build a "Glassmorphism" layout with floating, responsive control panels. It features dynamic Light/Dark themes and a live route directory table that auto-scrolls to highlight active paths.
     
 
-Challenges Faced
-----------------
+### 2\. Algorithm Used
 
-1.  **Dynamic Edge Weighting**: At first, the algorithm was hard-coded to only look at distance. I had to refactor the Dijkstra implementation to accept a dynamic string key (criteria) so it could dynamically pull graph\[currentNode\]\[neighbor\]\[criteria\] depending on the user's dropdown selection.
+To determine the optimal routes, I implemented **Dijkstra's Algorithm** in JavaScript.
+
+*   **Why Dijkstra's?** It is the industry standard for finding the shortest paths between nodes in a graph with non-negative edge weights.
     
-2.  **Graph Directionality**: The provided table clearly states "From Node" and "To Node". Implementing this correctly meant strictly defining the graph as directed. Some nodes (like IMUS to NOVELETA) have paths going both ways, but others do not. Ensuring the Vis.js visualization accurately reflected these one-way and two-way streets with directional arrows required careful configuration.
+*   **Implementation Details:** The algorithm uses a priority queue approach. It was written to dynamically accept a weight parameter (distance, time, or fuel). This allows a single function to seamlessly calculate the optimal path for any scenario based on the user's dropdown selection, making the code highly efficient and modular. Once the destination is reached, the algorithm reconstructs the path backwards using a previous node tracker.
     
-3.  **Visual Highlighting**: Connecting the mathematical output of Dijkstra's algorithm (an array of node IDs) back to the visual UI was challenging. I had to write logic that not only highlighted the specific nodes returned by the algorithm but also reconstructed the specific edge IDs (e.g., IMUS-BACOOR) so that the connecting lines would light up in yellow to physically trace the route on the screen.
+
+### 3\. Challenges Faced
+
+During the development of this assignment, I encountered and overcame several technical hurdles:
+
+1.  **Coordinate Synchronization & Map Layering:** \* _Challenge:_ Layering the vis-network canvas directly over a static image meant that if the user zoomed or panned the map, the nodes would misalign from the background.
+    
+    *   _Solution:_ Instead of using standard CSS backgrounds, I used the HTML5 Canvas API to draw Cavite.png _inside_ the Vis.js render cycle (network.on("beforeDrawing")). This ensured the nodes and the map scale and pan perfectly together.
+        
+2.  **Dynamic Edge Weighting:** \* _Challenge:_ Standard Dijkstra implementations usually check a single, hardcoded weight (like distance).
+    
+    *   _Solution:_ I refactored the algorithm to accept a dynamic string key (criteria), allowing it to dynamically pull graph\[currentNode\]\[neighbor\]\[criteria\] on the fly depending on what the user is currently optimizing for.
+        
+3.  **WCAG Accessibility & Contrast:** \* _Challenge:_ Depending on whether the user is in Light or Dark mode, the data labels (Distance, Time, Fuel) would occasionally blend into the complex geographic map background, making them hard to read.
+    
+    *   _Solution:_ I implemented dynamic typography "halos" (text stroking). In Light Mode, text is dark slate wrapped in a thick white outline; in Dark Mode, it inverses. This guarantees a WCAG AAA contrast ratio so the numbers are always readable regardless of intersecting lines or background colors.
