@@ -114,8 +114,8 @@
     <div id="network-container"></div>
 
     <!-- Theme Toggle Button (Top Right) -->
-    <div class="absolute top-6 right-6 z-20">
-        <button onclick="toggleTheme()" class="glass-panel p-3 rounded-full flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all hover:scale-105 active:scale-95" title="Toggle Light/Dark Theme">
+    <div class="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
+        <button onclick="toggleTheme()" class="glass-panel p-2.5 sm:p-3 rounded-full flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all hover:scale-105 active:scale-95" title="Toggle Light/Dark Theme">
             <!-- Moon Icon (Visible in Light Mode) -->
             <svg id="themeIconDark" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             <!-- Sun Icon (Visible in Dark Mode) -->
@@ -147,8 +147,8 @@
         </div>
     </div>
 
-    <!-- Floating Top Left Control Panel -->
-    <div class="absolute top-6 left-6 w-[340px] glass-panel rounded-2xl p-5 z-10 flex flex-col gap-4">
+    <!-- Floating Control Panel (Bottom on Mobile, Top-Left on Desktop) -->
+    <div class="absolute bottom-4 left-4 right-4 sm:bottom-auto sm:top-6 sm:left-6 sm:right-auto sm:w-[340px] glass-panel rounded-2xl p-4 sm:p-5 z-10 flex flex-col gap-3 sm:gap-4 max-h-[50vh] sm:max-h-none overflow-y-auto custom-scrollbar">
         
         <div>
             <h2 class="text-zinc-800 dark:text-zinc-100 font-bold text-lg tracking-wide mb-1">Routing Map Controls</h2>
@@ -178,7 +178,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-2 mt-2">
+        <div class="flex gap-2 mt-1 sm:mt-2">
             <button onclick="calculatePath()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow active:scale-95">
                 Calculate Route
             </button>
@@ -188,14 +188,14 @@
         </div>
 
         <!-- Results Output Area -->
-        <div id="resultBox" class="mt-1 bg-white/60 dark:bg-zinc-900/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700/60 min-h-[120px] max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-5">Select locations and click calculate to discover the optimal route.</p>
+        <div id="resultBox" class="mt-1 bg-white/60 dark:bg-zinc-900/50 rounded-xl p-3 sm:p-4 border border-zinc-200 dark:border-zinc-700/60 min-h-[100px] sm:min-h-[120px] max-h-[140px] sm:max-h-[180px] overflow-y-auto custom-scrollbar shadow-inner">
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-3 sm:mt-5">Select locations and click calculate to discover the optimal route.</p>
         </div>
 
     </div>
 
-    <!-- Floating Bottom Stats Bar -->
-    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 flex gap-6 items-center text-xs text-zinc-600 dark:text-zinc-400 shadow-lg border border-zinc-200 dark:border-zinc-700">
+    <!-- Floating Bottom Stats Bar (Hidden on Mobile to save space) -->
+    <div class="hidden sm:flex absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-panel rounded-full px-6 py-3 z-10 gap-6 items-center text-xs text-zinc-600 dark:text-zinc-400 shadow-lg border border-zinc-200 dark:border-zinc-700">
         <div>Total Nodes: <span class="font-bold text-zinc-900 dark:text-zinc-200 ml-1" id="statNodes">0</span></div>
         <div class="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600"></div>
         <div>Connections: <span class="font-bold text-zinc-900 dark:text-zinc-200 ml-1" id="statEdges">0</span></div>
@@ -364,7 +364,7 @@
                     arrows: { to: { enabled: true, scaleFactor: 0.5 } },
                     color: { color: 'rgba(161, 161, 170, 0.8)', highlight: '#10b981' }, // Neutral grey lines so node colors pop
                     width: 2,
-                    smooth: { type: 'curvedCW', roundness: 0.35 }
+                    smooth: false // Removed curve to make edges perfectly straight matching the car's path
                 };
             });
 
@@ -439,6 +439,7 @@
             const shadowBaseColor = isDarkMode ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
             
             const updatedNodes = nodesDataset.get().map(node => {
+                if (node.id === 'travel-car') return node; // Skip the car image
                 const isHighlight = node.highlighted;
                 return {
                     id: node.id,
@@ -471,6 +472,15 @@
         }
 
         function resetGraph() {
+            // Clean up car animation if it's currently running
+            if (window.carAnimationId) {
+                cancelAnimationFrame(window.carAnimationId);
+                window.carAnimationId = null;
+            }
+            if (nodesDataset.get('travel-car')) {
+                nodesDataset.remove('travel-car');
+            }
+
             nodesDataset.get().forEach((node, index) => {
                 const nodeColor = colorPalette[index % colorPalette.length];
                 nodesDataset.update({ 
@@ -551,6 +561,83 @@
         // ==========================================
         // PART 4: MAIN EXECUTION & ANIMATION
         // ==========================================
+        window.carAnimationId = null;
+
+        function animateCar(path) {
+            if (path.length < 2) return;
+
+            const positions = network.getPositions();
+
+            // Calculate the initial direction to determine which image to use
+            const startPosInitial = positions[path[0]];
+            const endPosInitial = positions[path[1]];
+            const initialDx = endPosInitial.x - startPosInitial.x;
+            
+            // If the car moves to the right (dx > 0), use the flipped image
+            const initialImage = initialDx > 0 ? 'Travelling_right.png' : 'Travelling.png';
+
+            // Add the car node at the starting position
+            nodesDataset.add({
+                id: 'travel-car',
+                shape: 'image',
+                image: initialImage,
+                size: 24, // Sized roughly the same as standard nodes
+                x: startPosInitial.x,
+                y: startPosInitial.y,
+                physics: false,
+                shadow: { enabled: true, color: 'rgba(0,0,0,0.4)', size: 6, x: 2, y: 2 }
+            });
+
+            let currentSegment = 0;
+            let progress = 0;
+            const speed = 0.015; // Adjust this to make the car move faster or slower
+
+            function step() {
+                if (currentSegment >= path.length - 1) return; // Reached destination
+
+                const startNode = path[currentSegment];
+                const endNode = path[currentSegment + 1];
+                const startPos = positions[startNode];
+                const endPos = positions[endNode];
+
+                progress += speed;
+                
+                if (progress >= 1) {
+                    progress = 0;
+                    currentSegment++;
+                    
+                    if (currentSegment >= path.length - 1) {
+                        // Snap exactly to final destination
+                        network.moveNode('travel-car', positions[path[path.length-1]].x, positions[path[path.length-1]].y);
+                        return;
+                    }
+                    
+                    // The car is starting a new segment, calculate new direction
+                    const nextStartNode = path[currentSegment];
+                    const nextEndNode = path[currentSegment + 1];
+                    const nextStartPos = positions[nextStartNode];
+                    const nextEndPos = positions[nextEndNode];
+                    
+                    const dx = nextEndPos.x - nextStartPos.x;
+                    
+                    // Update car image dynamically depending on direction
+                    nodesDataset.update({
+                        id: 'travel-car',
+                        image: dx > 0 ? 'Travelling_right.png' : 'Travelling.png'
+                    });
+                    
+                } else {
+                    // Interpolate coordinates for smooth movement
+                    const currentX = startPos.x + (endPos.x - startPos.x) * progress;
+                    const currentY = startPos.y + (endPos.y - startPos.y) * progress;
+                    network.moveNode('travel-car', currentX, currentY);
+                }
+                window.carAnimationId = requestAnimationFrame(step);
+            }
+            
+            step();
+        }
+
         function calculatePath() {
             resetGraph(); 
 
@@ -651,6 +738,11 @@
                     }
                     animationDelay += stepDelay;
                 });
+
+                // Launch the car animation immediately after the path visualization finishes
+                setTimeout(() => {
+                    animateCar(path);
+                }, animationDelay);
 
             } else {
                 resultBox.innerHTML = `<p class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold p-3 bg-white dark:bg-zinc-800 rounded-lg border border-rose-200 dark:border-rose-900/50">No valid path found in the network.</p>`;
