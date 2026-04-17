@@ -1,0 +1,18 @@
+# Raw Data and Archives
+raw_data/
+amazon dataset.zip
+*.csv
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
