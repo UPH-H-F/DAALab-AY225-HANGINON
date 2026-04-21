@@ -1,82 +1,72 @@
-import os
-import json
 import pandas as pd
+import json
+import re
 
-def preprocess_single_amazon_file(input_filepath, output_filepath):
-    target_columns =['name', 'ratings', 'no_of_ratings', 'discount_price', 'actual_price']
-    
-    print(f"Reading {input_filepath}...")
+# Helper function to strip ₹ symbols and commas, converting to pure numbers
+def clean_number(x):
+    if pd.isna(x): 
+        return None
+    # Remove anything that isn't a digit or a decimal point
+    val = re.sub(r'[^\d.]', '', str(x))
+    return float(val) if val else None
+
+def main():
+    # 1. Load the raw Kaggle dataset
+    # Ensure 'Amazon-Products.csv' is inside the 'raw data' folder
+    print("Loading dataset...")
     try:
-        # 1 & 2. Load the file, select columns, enforce utf-8, and skip corrupted rows
-        df = pd.read_csv(
-            input_filepath, 
-            usecols=lambda c: c in target_columns, 
-            encoding='utf-8', 
-            on_bad_lines='skip',
-            low_memory=False
-        )
+        df = pd.read_csv('raw data/Amazon-Products.csv', low_memory=False)
     except FileNotFoundError:
-        print(f"Error: Could not find the file at {input_filepath}")
-        return
-    except Exception as e:
-        print(f"Failed to read CSV: {e}")
+        print("Error: 'raw data/Amazon-Products.csv' not found. Please check your folder structure.")
         return
 
-    print(f"Initial Dataset Shape: {df.shape[0]} rows.")
-    print("Cleaning data and converting formats...")
-    
-    # 3. Clean prices: Remove '₹' and ',' then convert to numeric
-    for col in ['discount_price', 'actual_price']:
-        df[col] = df[col].astype(str).str.replace('₹', '', regex=False)
-        df[col] = df[col].str.replace(',', '', regex=False)
-        df[col] = pd.to_numeric(df[col], errors='coerce')
+    # Handle variations in column names from the raw data
+    if 'no of ratings' in df.columns:
+        df.rename(columns={'no of ratings': 'no_of_ratings'}, inplace=True)
 
-    # Clean no_of_ratings: Remove ',' and convert to numeric
-    df['no_of_ratings'] = df['no_of_ratings'].astype(str).str.replace(',', '', regex=False)
-    df['no_of_ratings'] = pd.to_numeric(df['no_of_ratings'], errors='coerce')
+    # 2. Select the required columns (Including main_category and sub_category)
+    columns_to_keep = [
+        'name', 'main_category', 'sub_category', 
+        'ratings', 'no_of_ratings', 'discount_price', 'actual_price'
+    ]
     
-    # Clean ratings: convert to numeric
-    df['ratings'] = pd.to_numeric(df['ratings'], errors='coerce')
+    # Ensure only existing columns are selected
+    columns_to_keep = [c for c in columns_to_keep if c in df.columns]
+    df = df[columns_to_keep]
 
-    # 4. Handle missing, null, or corrupted rows via dropna()
-    df = df.dropna(subset=target_columns)
+    # 3. Clean the numerical columns
+    print("Cleaning numbers and currency...")
+    if 'ratings' in df.columns:
+        df['ratings'] = df['ratings'].apply(clean_number)
+    if 'no_of_ratings' in df.columns:
+        df['no_of_ratings'] = df['no_of_ratings'].apply(clean_number)
+    if 'discount_price' in df.columns:
+        df['discount_price'] = df['discount_price'].apply(clean_number)
+    if 'actual_price' in df.columns:
+        df['actual_price'] = df['actual_price'].apply(clean_number)
+
+    # 3.5 REMOVE ALL ROWS WITH ANY BLANK CELLS
+    print("Filtering out products with any missing values...")
+    df.dropna(inplace=True)
+
+    # 4. Extract a random sample of exactly 3,000 products
+    print("Sampling 3000 records...")
+    sample_size = min(3000, len(df))
+    df_sampled = df.sample(n=sample_size, random_state=42) # random_state ensures consistent sampling
+
+    # Replace Pandas NaN with Python None so JSON outputs it cleanly as 'null'
+    df_sampled = df_sampled.where(pd.notnull(df_sampled), None)
+
+    # 5. Export to JavaScript format
+    print("Exporting to amazon_sample_3000.js...")
+    records = df_sampled.to_dict(orient='records')
     
-    # Convert no_of_ratings to strict integer
-    df['no_of_ratings'] = df['no_of_ratings'].astype(int)
-
-    print(f"Shape after dropping missing/corrupted rows: {df.shape[0]} rows.")
-
-    # 5. Extract a random sample of 3,000 rows
-    print("Extracting a random sample of 3,000 products...")
-    
-    # We use min() just in case the cleaned dataset ends up being smaller than 3000 rows
-    sample_size = min(3000, df.shape[0])
-    
-    # random_state=42 guarantees you get the same "random" 3000 rows every time you run this. 
-    # Remove 'random_state=42' if you want a different sample on every execution.
-    random_sample_df = df.sample(n=sample_size, random_state=42)
-
-    # Convert DataFrame to a list of dictionaries
-    records = random_sample_df.to_dict(orient='records')
-
-    # Export to formatted Javascript array
-    print("Formatting and exporting to JavaScript file...")
-    js_content = "const RAW_DATA = " + json.dumps(records, indent=4, ensure_ascii=False) + ";"
-    
-    with open(output_filepath, 'w', encoding='utf-8') as f:
-        f.write(js_content)
+    with open('amazon_sample_3000.js', 'w', encoding='utf-8') as f:
+        f.write("const RAW_DATA = \n")
+        json.dump(records, f, indent=2)
+        f.write(";\n")
         
-    print(f"Success! Exported {len(records)} random items to {output_filepath}")
-
+    print("✅ Success! 'amazon_sample_3000.js' has been updated with strictly complete data.")
 
 if __name__ == "__main__":
-    # Dynamically find the script's directory so it works from anywhere
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    
-    # Point directly to the single compiled CSV file
-    INPUT_FILE = os.path.join(BASE_DIR, "raw_data", "Amazon-Products.csv")
-    
-    # Output file (saved in the same directory as this script)
-    OUTPUT_FILE = os.path.join(BASE_DIR, "amazon_sample_3000.js")
-    
-    preprocess_single_amazon_file(INPUT_FILE, OUTPUT_FILE)
+    main()
