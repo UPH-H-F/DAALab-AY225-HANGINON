@@ -531,7 +531,7 @@ footer {
       <span class="owner-badge badge-s1">Student 1 · Repo Owner</span>
     </div>
     <div class="todo-box s1">
-      <strong>✅ STUDENT 1 — IMPLEMENTED</strong>
+      <strong>꩜ STUDENT 1 — IMPLEMENTED</strong>
       Dataset loaded, table filtering/sorting works, summary cards active, pagination (10 per page) with first/last and jump to page.
     </div>
     <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 24px; font-size: 0.75rem;">
@@ -586,7 +586,7 @@ footer {
       <div class="section-head-left"><span class="section-num">02</span><h2>Visualizations</h2></div>
       <span class="owner-badge badge-s2">Student 2 · Collaborator</span>
     </div>
-    <div class="todo-box s2"><strong>✅ STUDENT 2 — IMPLEMENTED</strong> All charts and statistical functions are fully operational. Doughnut chart tooltip shows percentages.</div>
+    <div class="todo-box s2"><strong>꩜ STUDENT 2 — IMPLEMENTED</strong> All charts and statistical functions are fully operational. Doughnut chart tooltip shows percentages.</div>
     <div class="chart-row">
       <div class="chart-tile">
         <h4>Top 10 Sub‑Categories</h4>
@@ -602,8 +602,8 @@ footer {
       </div>
     </div>
     <div class="chart-tile" style="margin-top:20px;">
-      <h4>Reviews vs. Rating Correlation</h4>
-      <p class="chart-sub">Exploring the stabilizing effect of large review volumes on product ratings</p>
+      <h4>Actual vs. Discount Price Correlation</h4>
+      <p class="chart-sub">Exploring the relationship between actual prices and discounted prices</p>
       <div class="chart-placeholder" id="scatterPlaceholder" style="display:none;"><span class="ico">📈</span> No data</div>
       <canvas id="scatterChart" style="display:block; max-height:200px;"></canvas>
     </div>
@@ -615,7 +615,7 @@ footer {
       <div class="section-head-left"><span class="section-num">03</span><h2>Statistical Analysis</h2></div>
       <span class="owner-badge badge-s2">Student 2 · Collaborator</span>
     </div>
-    <div class="todo-box s2"><strong>✅ STUDENT 2 — IMPLEMENTED</strong> Statistical functions and narratives successfully linked.</div>
+    <div class="todo-box s2"><strong>꩜ STUDENT 2 — IMPLEMENTED</strong> Statistical functions and narratives successfully linked.</div>
     <div class="analysis-grid">
       <div class="analysis-tile">
         <h4>Descriptive Statistics</h4>
@@ -631,7 +631,7 @@ footer {
       <div class="analysis-tile">
         <h4>Correlation Analysis</h4>
         <ul class="kv-list">
-          <li><span class="k">Pearson r (reviews→rating)</span>   <span class="v" id="rPearson">—</span></li>
+          <li><span class="k">Pearson r (actual→discount)</span>   <span class="v" id="rPearson">--</span></li>
           <li><span class="k">Interpretation</span>                <span class="v" id="rInterp">—</span></li>
           <li><span class="k">Pearson r (price→rating)</span>     <span class="v" id="rPearson2">—</span></li>
           <li><span class="k">Interpretation</span>                <span class="v" id="rInterp2">—</span></li>
@@ -657,7 +657,7 @@ footer {
     </div>
   </section>
 </main>
-<footer>AMAZON PRODUCT ANALYTICS COLLABORATIVE ACTIVITY &nbsp;·&nbsp; 2-STUDENT GIT WORKFLOW</footer>
+<footer>AMAZON PRODUCTS ANALYTICS COLLABORATIVE ACTIVITY &nbsp;·&nbsp; 2-STUDENT GIT WORKFLOW</footer>
 
 <!-- External dataset – make sure amazon_sample_3000.js is in the same folder -->
 <script src="amazon_sample_3000.js"></script>
@@ -950,13 +950,13 @@ function drawScatterPlot(canvasId, data) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (window.CHARTS[canvasId]) window.CHARTS[canvasId].destroy();
-  const scatterData = data.map(d => ({ x: cleanNum(d.no_of_ratings), y: cleanNum(d.ratings) })).filter(d => d.x != null && d.y != null);
+  const scatterData = data.map(d => ({ x: cleanNum(d.actual_price), y: cleanNum(d.discount_price) })).filter(d => d.x != null && d.y != null);
   if (scatterData.length === 0) return;
   canvas.style.display = 'block';
   document.getElementById('scatterPlaceholder').style.display = 'none';
   window.CHARTS[canvasId] = new Chart(ctx, {
     type: 'scatter',
-    data: { datasets: [{ label: 'Reviews vs Rating', data: scatterData, backgroundColor: 'rgba(58,125,92,0.5)', borderColor: '#3a7d5c' }] },
+    data: { datasets: [{ label: 'Actual vs Discount Price', data: scatterData, backgroundColor: 'rgba(58,125,92,0.5)', borderColor: '#3a7d5c' }] },
     options: chartTheme()
   });
 }
@@ -1026,9 +1026,9 @@ function renderAnalysis(data) {
   document.getElementById('aVariance').textContent = variance(ratings).toFixed(4);
   document.getElementById('aStdDev').textContent = stdDev(ratings).toFixed(4);
 
-  const cleaned = data.map(d => ({ rev: cleanNum(d.no_of_ratings), rat: cleanNum(d.ratings), price: cleanNum(d.discount_price) }));
-  const revRat = cleaned.filter(d => d.rev != null && d.rat != null);
-  const xRev = revRat.map(d => d.rev), yRatRev = revRat.map(d => d.rat);
+  const cleaned = data.map(d => ({ actual: cleanNum(d.actual_price), rat: cleanNum(d.ratings), price: cleanNum(d.discount_price) }));
+  const revRat = cleaned.filter(d => d.actual != null && d.price != null);
+  const xRev = revRat.map(d => d.actual), yRatRev = revRat.map(d => d.price);
   const priceRat = cleaned.filter(d => d.price != null && d.rat != null);
   const xPrice = priceRat.map(d => d.price), yRatPrice = priceRat.map(d => d.rat);
   const r1 = pearsonCorr(xRev, yRatRev);
@@ -1051,15 +1051,19 @@ function renderAnalysis(data) {
 }
 
 function renderInsights(data) {
-  const highRatedCount = data.filter(p => cleanNum(p.ratings) >= 4.0).length;
+  // Calculate Rating Distribution dynamically
+  const highRatedCount = data.filter(p => Number(p.ratings) >= 4.0).length;
   const percent = ((highRatedCount / data.length) * 100).toFixed(1);
+
   document.getElementById('insightsBody').innerHTML = `
     <p class="insight-text">
-      Based on the statistical exploration of <span class="highlight">${data.length} products</span>, the overwhelming majority of Amazon's catalog performs well, with <span class="highlight">${percent}% of items scoring 4.0 or above</span>.
+      Based on a statistical analysis of <span class="highlight">${data.length} products</span>, a significant portion of Amazon's catalog performs well, with <span class="highlight">${percent}% of items scoring 4.0 or higher</span>. 
       <br><br>
-      Our analysis groups the products by <span class="highlight">sub‑category</span> to discover the highest‑performing sectors. By averaging the ratings of items that have at least 50 reviews, the bar chart represents genuine customer satisfaction.
+      Our analysis groups the products into the Top 10 Sub-Categories to identify the best-performing sectors. By averaging the ratings of items with at least 50 reviews, the bar chart represents genuine customer satisfaction.
       <br><br>
-      Furthermore, our correlation analysis indicates a remarkably <span class="highlight">weak relationship</span> between the volume of reviews and the actual product rating. This suggests that highly reviewed products do not necessarily guarantee a perfect 5‑star rating due to the stabilizing effect of large sample sizes.
+      Furthermore, our analysis shows a strong positive correlation <span class="highlight"> (r = 0.9721)</span> between the actual and discounted prices. Our linear regression model explains <span class="highlight">94.5% of the variance</span> (R² = 0.9450) between the two prices, demonstrating the pricing strategy's high predictability.
+      <br><br>
+      In contrast, there is a remarkably <span class="highlight">weak relationship (r = 0.0767)</span> between the price of an item and its final customer rating. This indicates that more expensive products do not necessarily result in higher customer satisfaction.
     </p>
   `;
 }
