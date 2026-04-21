@@ -4,7 +4,7 @@
 **Dataset Source:** [Amazon Products Sales Dataset 2023](https://www.kaggle.com/datasets/lokeshparab/amazon-products-dataset)
 
 ## How to Run and Use the Dashboard
-1. **To view live:** Navigate to the GitHub Pages live link provided in the repository [].
+1. **To view live:** ...github.io/
 2. **To view locally:** Clone the GitHub repository to your local machine and open `index.html` in any modern web browser.
 3. **Using the Dashboard:**
    * **Filtering & Sorting:** Use the search bar at the top of the data table to filter by specific product names, or use the dropdown menu to sort the 3,000 products by Name, Rating, Reviews, or Discount Price. **You must click the "Apply" button to trigger the search and update the table.**

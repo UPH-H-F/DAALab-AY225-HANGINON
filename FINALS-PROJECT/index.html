@@ -589,8 +589,8 @@ footer {
     <div class="todo-box s2"><strong>꩜ STUDENT 2 — IMPLEMENTED</strong> All charts and statistical functions are fully operational. Doughnut chart tooltip shows percentages.</div>
     <div class="chart-row">
       <div class="chart-tile">
-        <h4>Top 10 Sub‑Categories</h4>
-        <p class="chart-sub">Highest average rating by sub‑category (min. 50 reviews)</p>
+        <h4>Top 10 Most Reviewed</h4>
+        <p class="chart-sub">Sub-categories with the highest total number of reviews</p>
         <div class="chart-placeholder" id="barPlaceholder" style="display:none;"><span class="ico">📊</span> No data</div>
         <canvas id="barChart" style="display:block;"></canvas>
       </div>
@@ -861,19 +861,17 @@ function drawBarChart(canvasId, data) {
   const categoryMap = {};
   data.forEach(d => {
     const cat = d.sub_category;
-    const r = cleanNum(d.ratings);
     const revs = cleanNum(d.no_of_ratings);
-    if (cat && r != null && revs != null && revs >= 50) {  // minimum 50 reviews
-      if (!categoryMap[cat]) categoryMap[cat] = { sum: 0, count: 0 };
-      categoryMap[cat].sum += r;
-      categoryMap[cat].count += 1;
+    if (cat && revs != null) {
+      if (!categoryMap[cat]) categoryMap[cat] = 0;
+      categoryMap[cat] += revs; // Summing up all reviews
     }
   });
   const aggregated = Object.keys(categoryMap).map(cat => ({
     name: cat,
-    avgRating: categoryMap[cat].sum / categoryMap[cat].count
+    totalReviews: categoryMap[cat]
   }));
-  const sorted = aggregated.sort((a,b) => b.avgRating - a.avgRating).slice(0,10);
+  const sorted = aggregated.sort((a,b) => b.totalReviews - a.totalReviews).slice(0,10);
   if (sorted.length === 0) {
     canvas.style.display = 'none';
     document.getElementById('barPlaceholder').style.display = 'flex';
@@ -887,7 +885,7 @@ function drawBarChart(canvasId, data) {
     type: 'bar',
     data: {
       labels: sorted.map(d => d.name.substring(0,20)),
-      datasets: [{ label: 'Average Category Rating (min. 50 reviews)', data: sorted.map(d => d.avgRating), backgroundColor: 'rgba(58,125,92,0.8)', borderColor: '#3a7d5c', borderWidth: 1 }]
+      datasets: [{ label: 'Total Reviews', data: sorted.map(d => d.totalReviews), backgroundColor: 'rgba(58,125,92,0.8)', borderColor: '#3a7d5c', borderWidth: 1 }]
     },
     options: theme
   });
