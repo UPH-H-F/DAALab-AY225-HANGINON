@@ -919,14 +919,11 @@ function drawDoughnut(canvasId, data) {
       const chart = context.chart;
       const dataset = context.dataset;
       let dynamicTotal = 0;
-      
-      // Loop through all slices and only add the visible ones to the total
       for (let i = 0; i < dataset.data.length; i++) {
         if (chart.getDataVisibility(i)) {
           dynamicTotal += dataset.data[i];
         }
       }
-      
       const label = context.label || '';
       const value = context.raw || 0;
       const percentage = dynamicTotal > 0 ? ((value / dynamicTotal) * 100).toFixed(1) : 0;
