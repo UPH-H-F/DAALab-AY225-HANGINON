@@ -12,7 +12,7 @@
    * **Visualizations:** Scroll down to view the charts. You can hover over the Top 10 Most Reviewed bar chart, the Price Correlation scatter plot, and the Rating Distribution doughnut chart to see dynamic tooltips and percentages.
 
 ## Repository Structure
-```text
+```
 📦 FINALS-PROJECT
 ├── 📂 raw data/
 │   └── 📄 Amazon-Products.csv     (Note: Download from Kaggle, not included in repo)
@@ -21,6 +21,7 @@
 ├── 📄 preprocess.py               (Python script for data sampling and NaN cleaning)
 ├── 📄 requirements.txt            (Python dependencies for the script)
 └── 📄 README.md                   (Project documentation)
+```
 
 ## Dataset Selection
 We chose the `Amazon-Products.csv` file because, as stated in the dataset documentation, "This CSV file is having the data 300K+ All Combined Amazon Product's Details". This massive dataset spans 142 main categories and provides the exact numerical and categorical features we needed for our analysis, including product name, sub-category, ratings, number of ratings, discount price, and actual price.
