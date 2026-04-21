@@ -934,8 +934,8 @@ function drawDoughnut(canvasId, data) {
   window.CHARTS[canvasId] = new Chart(ctx, {
     type: 'doughnut',
     data: { 
-      labels: ['A (≥4.5)', 'B (≥4.0)', 'C (≥3.0)', 'D (<3.0)'], 
-      datasets: [{ data: [a,b,c,d], backgroundColor: ['#2a7a50','#3a6ea8','#b5820d','#d94f3d'] }] 
+      labels: ['Highly Rated (≥4.0)', 'Average (3.0-3.9)', 'Poor (<3.0)'], 
+      datasets: [{ data: [highlyRated, average, poor], backgroundColor: ['#2a7a50','#b5820d','#d94f3d'] }] 
     },
     options: theme
   });
