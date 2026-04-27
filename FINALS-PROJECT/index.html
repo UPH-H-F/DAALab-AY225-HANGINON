@@ -589,14 +589,14 @@ footer {
     <div class="todo-box s2"><strong>꩜ STUDENT 2 — IMPLEMENTED</strong> All charts and statistical functions are fully operational. Doughnut chart tooltip shows percentages.</div>
     <div class="chart-row">
       <div class="chart-tile">
-        <h4>Top 10 Most Reviewed</h4>
-        <p class="chart-sub">Sub-categories with the highest total number of reviews</p>
+        <h4>Top 10 Most Reviewed Products</h4>
+        <p class="chart-sub">Individual products with the highest total number of reviews</p>
         <div class="chart-placeholder" id="barPlaceholder" style="display:none;"><span class="ico">📊</span> No data</div>
         <canvas id="barChart" style="display:block;"></canvas>
       </div>
       <div class="chart-tile">
         <h4>Rating Distribution</h4>
-        <p class="chart-sub">Product quality tiers: A (≥4.5), B (≥4.0), C (≥3.0), D (&lt;3.0) — <strong>hover to see percentage</strong></p>
+        <p class="chart-sub">Overview of product quality based on customer reviews — <strong>hover to see percentage</strong></p>
         <div class="chart-placeholder" id="doughnutPlaceholder" style="display:none;"><span class="ico">🍩</span> No data</div>
         <canvas id="doughnutChart" style="display:block;"></canvas>
       </div>
@@ -858,18 +858,9 @@ function drawBarChart(canvasId, data) {
   const ctx = canvas.getContext('2d');
   if (window.CHARTS[canvasId]) window.CHARTS[canvasId].destroy();
   
-  const categoryMap = {};
-  data.forEach(d => {
-    const cat = d.sub_category;
-    const revs = cleanNum(d.no_of_ratings);
-    if (cat && revs != null) {
-      if (!categoryMap[cat]) categoryMap[cat] = 0;
-      categoryMap[cat] += revs; // Summing up all reviews
-    }
-  });
-  const aggregated = Object.keys(categoryMap).map(cat => ({
-    name: cat,
-    totalReviews: categoryMap[cat]
+  const aggregated = data.filter(d => d.name && cleanNum(d.no_of_ratings) != null).map(d => ({
+    name: d.name,
+    totalReviews: cleanNum(d.no_of_ratings)
   }));
   const sorted = aggregated.sort((a,b) => b.totalReviews - a.totalReviews).slice(0,10);
   if (sorted.length === 0) {
@@ -1045,19 +1036,15 @@ function renderAnalysis(data) {
 }
 
 function renderInsights(data) {
-  // Calculate Rating Distribution dynamically
-  const highRatedCount = data.filter(p => Number(p.ratings) >= 4.0).length;
+  const highRatedCount = data.filter(p => cleanNum(p.ratings) >= 4.0).length;
   const percent = ((highRatedCount / data.length) * 100).toFixed(1);
-
   document.getElementById('insightsBody').innerHTML = `
     <p class="insight-text">
-      Based on a statistical analysis of <span class="highlight">${data.length} products</span>, a significant portion of Amazon's catalog performs well, with <span class="highlight">${percent}% of items scoring 4.0 or higher</span>. 
+      Based on the statistical analysis of <span class="highlight">${data.length} products</span>, a significant portion of Amazon's catalog performs well, with <span class="highlight">${percent}% of items scoring 4.0 or above</span> and a low standard deviation of <span class="highlight">0.7494</span>.
       <br><br>
-      Our analysis groups the products by <span class="highlight">sub‑category</span> to identify the most engaging sectors. By summing the total number of reviews, the bar chart highlights the most reviewed categories, representing the highest volume of customer interaction.
+      Our analysis discovers the most engaging items by highlighting the <span class="highlight">individual products</span> with the highest total number of reviews, representing the highest volume of customer interaction.
       <br><br>
-      Furthermore, our analysis shows a strong positive correlation <span class="highlight"> (r = 0.9721)</span> between the actual and discounted prices. Our linear regression model explains <span class="highlight">94.5% of the variance</span> (R² = 0.9450) between the two prices, demonstrating the pricing strategy's high predictability.
-      <br><br>
-      In contrast, there is a remarkably <span class="highlight">weak relationship (r = 0.0767)</span> between the price of an item and its final customer rating. This indicates that more expensive products do not necessarily result in higher customer satisfaction.
+      Furthermore, our correlation analysis indicates a remarkably <span class="highlight">strong relationship (r = 0.9721)</span> between actual and discount prices, with our linear regression model explaining <span class="highlight">94.5% of the variance</span>. Conversely, there is a remarkably <span class="highlight">weak relationship (r = 0.0767)</span> between price and product ratings, suggesting that expensive products do not guarantee higher customer satisfaction.
     </p>
   `;
 }
