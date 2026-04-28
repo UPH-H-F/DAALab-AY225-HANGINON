@@ -599,11 +599,14 @@ footer {
         <p class="chart-sub">Overview of product quality based on customer reviews — <strong>hover to see percentage</strong></p>
         <div class="chart-placeholder" id="doughnutPlaceholder" style="display:none;"><span class="ico">🍩</span> No data</div>
         <div style="position: relative; height: 230px; width: 100%;">
-          <canvas id="doughnutChart" style="display:block;"></canvas>
+            <canvas id="doughnutChart" style="display:block;"></canvas>
+          </div>
         </div>
-    </div>
-    <div class="chart-tile" style="margin-top:20px;">
-      <h4>Actual vs. Discount Price Correlation</h4>
+      </div> <!-- THIS CLOSES THE 2-COLUMN CHART-ROW -->
+
+      <!-- SCATTER PLOT IS NOW FULL WIDTH -->
+      <div class="chart-tile chart-single">
+        <h4>Actual vs. Discount Price Correlation</h4>
       <p class="chart-sub">Exploring the relationship between actual prices and discounted prices</p>
       <div class="chart-placeholder" id="scatterPlaceholder" style="display:none;"><span class="ico">📈</span> No data</div>
       <canvas id="scatterChart" style="display:block; max-height:200px;"></canvas>
