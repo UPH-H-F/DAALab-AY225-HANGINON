@@ -598,8 +598,9 @@ footer {
         <h4>Rating Distribution</h4>
         <p class="chart-sub">Overview of product quality based on customer reviews — <strong>hover to see percentage</strong></p>
         <div class="chart-placeholder" id="doughnutPlaceholder" style="display:none;"><span class="ico">🍩</span> No data</div>
-        <canvas id="doughnutChart" style="display:block;"></canvas>
-      </div>
+        <div style="position: relative; height: 230px; width: 100%;">
+          <canvas id="doughnutChart" style="display:block;"></canvas>
+        </div>
     </div>
     <div class="chart-tile" style="margin-top:20px;">
       <h4>Actual vs. Discount Price Correlation</h4>
@@ -901,6 +902,8 @@ function drawDoughnut(canvasId, data) {
   document.getElementById('doughnutPlaceholder').style.display = 'none';
   const theme = chartTheme();
   delete theme.scales; 
+  theme.maintainAspectRatio = false;
+  
 
   // DYNAMIC TOOLTIP LOGIC
   theme.plugins.tooltip.callbacks = {
